@@ -7,7 +7,7 @@
 <meta name="description" content="Try the flow of a hybrid YOLOv8 + EfficientNet-B0 detection pipeline in demo mode, then download the full project to run it yourself.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23064ACB'/%3E%3Crect x='24' y='24' width='34' height='34' rx='6' fill='none' stroke='%23F6490D' stroke-width='6'/%3E%3Ccircle cx='70' cy='70' r='14' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Manrope:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#064ACB; --navy-deep:#021d6b; --blue:#366ED8; --orange:#F6490D;
@@ -22,12 +22,10 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);-
 img,svg{display:block;max-width:100%}
 a{color:inherit}
 
-/* ═══ DEMO RIBBON ═══ */
 .demo-ribbon{position:sticky;top:0;z-index:100;background:linear-gradient(90deg,var(--orange),#ff7a45);color:#fff;text-align:center;font-weight:800;font-size:13px;letter-spacing:.02em;padding:9px 16px;display:flex;align-items:center;justify-content:center;gap:8px}
 .demo-ribbon .pulse{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
 
-/* ═══ NAV ═══ */
 .nav{position:sticky;top:35px;z-index:90;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;text-decoration:none}
@@ -35,7 +33,6 @@ a{color:inherit}
 .brand-mark svg{width:17px;height:17px}
 .nav a.dl{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:800;text-decoration:none;box-shadow:0 3px 0 #043898}
 
-/* ═══ HERO ═══ */
 .hero{background:linear-gradient(150deg,var(--navy-deep) 0%,var(--navy) 46%,var(--blue) 100%);padding:64px 24px 56px;text-align:center;position:relative;overflow:hidden}
 .hero-mesh{position:absolute;inset:0;background:radial-gradient(ellipse 55% 75% at 12% 20%,rgba(246,73,13,.16) 0%,transparent 60%),radial-gradient(ellipse 50% 65% at 88% 12%,rgba(124,58,237,.22) 0%,transparent 55%);pointer-events:none}
 .hero-content{position:relative;max-width:680px;margin:0 auto}
@@ -44,12 +41,18 @@ a{color:inherit}
 .hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--orange),#ff9770);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero p{font-size:15.5px;color:#c9d8ff;line-height:1.7;font-weight:600}
 
-/* ═══ SECTION SHELL ═══ */
 .section{max-width:1000px;margin:0 auto;padding:64px 24px}
 .section-title{font-family:'Manrope',sans-serif;font-size:clamp(22px,3vw,28px);font-weight:800;text-align:center;letter-spacing:-.02em;margin-bottom:10px}
-.section-sub{text-align:center;font-size:14.5px;color:var(--muted);max-width:520px;margin:0 auto 40px;line-height:1.7;font-weight:600}
+.section-sub{text-align:center;font-size:14.5px;color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.7;font-weight:600}
 
-/* ═══ DEMO CARD ═══ */
+.mode-tabs{display:flex;justify-content:center;gap:10px;margin-bottom:28px}
+.mode-tab{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);padding:11px 22px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;color:var(--muted);transition:all .18s}
+.mode-tab:hover{border-color:#c7d3ea}
+.mode-tab.active{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(6,74,203,.25)}
+
+.demo-panel{display:none}
+.demo-panel.active{display:block}
+
 .demo-card{background:var(--panel);border:1.5px solid var(--line);border-radius:22px;padding:32px}
 .upload-zone{border:2.5px dashed #c7d3ea;border-radius:16px;padding:36px 20px;text-align:center;position:relative;background:#fff;cursor:pointer;transition:border-color .2s,background .2s}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:#f2f6ff}
@@ -58,7 +61,7 @@ a{color:inherit}
 .upload-title{font-weight:800;font-size:15px;margin-bottom:5px}
 .upload-formats{font-size:12.5px;color:var(--muted);font-weight:600}
 .preview-wrap{display:none;margin-top:16px;text-align:center}
-.preview-wrap img{max-height:220px;border-radius:12px;margin:0 auto;box-shadow:0 6px 20px rgba(6,74,203,.15)}
+.preview-wrap img,.preview-wrap video{max-height:220px;border-radius:12px;margin:0 auto;box-shadow:0 6px 20px rgba(6,74,203,.15)}
 .preview-name{font-size:12.5px;color:var(--muted);margin-top:8px;font-weight:700}
 
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}
@@ -69,19 +72,24 @@ a{color:inherit}
 .run-btn:hover{transform:translateY(-1px)}
 .run-btn:disabled{opacity:.7;cursor:progress}
 
-/* ═══ PROCESSING ═══ */
 .processing{display:none;margin-top:22px;text-align:center;padding:20px;background:#fff;border-radius:14px;border:1.5px solid var(--line)}
 .spinner{width:30px;height:30px;border:3px solid #e6eaf2;border-top-color:var(--navy);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .processing-msg{font-size:13.5px;font-weight:700;color:var(--muted)}
 
-/* ═══ RESULTS ═══ */
 .results{display:none;margin-top:28px}
 .sample-tag{display:inline-flex;align-items:center;gap:7px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-size:12px;font-weight:800;padding:7px 14px;border-radius:999px;margin-bottom:16px}
-.result-scene{border-radius:14px;overflow:hidden;border:1.5px solid var(--line);box-shadow:0 6px 24px rgba(6,74,203,.1)}
+.result-scene{border-radius:14px;overflow:hidden;border:1.5px solid var(--line);box-shadow:0 6px 24px rgba(6,74,203,.1);position:relative}
+.play-badge{position:absolute;top:14px;right:14px;background:rgba(11,18,32,.75);color:#fff;font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 24px;font-size:12px;font-weight:700}
 .legend span{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:999px}
 .dot{width:8px;height:8px;border-radius:50%}
+
+.video-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.vstat{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 8px;text-align:center}
+.vstat b{display:block;font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;color:var(--navy)}
+.vstat span{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+@media(max-width:560px){.video-stats{grid-template-columns:repeat(2,1fr)}}
 
 .group-header{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13.5px;margin:22px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
 .group-count{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
@@ -93,8 +101,8 @@ a{color:inherit}
 .conf-high{background:#dcfce7;color:#166534}
 .conf-mid{background:#fef3c7;color:#92400e}
 .model-tag{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-top:5px}
+.track-tag{display:block;font-size:9.5px;color:#7e22ce;font-weight:800;margin-top:2px}
 
-/* ═══ DOWNLOAD SECTION ═══ */
 .download-section{background:linear-gradient(150deg,var(--navy-deep),var(--navy));border-radius:24px;padding:48px 32px;color:#fff;text-align:center}
 .download-section h2{font-family:'Manrope',sans-serif;font-size:clamp(22px,3vw,28px);font-weight:800;margin-bottom:12px}
 .download-section p{color:#c9d8ff;font-size:14.5px;max-width:520px;margin:0 auto 26px;line-height:1.7;font-weight:600}
@@ -131,150 +139,280 @@ footer{text-align:center;padding:32px 24px;color:var(--muted);font-size:12.5px;f
   <div class="hero-content">
     <span class="eyebrow">🧪 Interactive Demo</span>
     <h1>See the <em>Hybrid Vision</em> pipeline in action</h1>
-    <p>YOLOv8 detects, EfficientNet-B0 refines. Walk through the exact flow of the real app below — then download it to run real detection on your own machine.</p>
+    <p>YOLOv8 detects, EfficientNet-B0 refines. Walk through the exact flow of the real app — for images and video — then download it to run real detection on your own machine.</p>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-title">Try the image detection flow</div>
-  <p class="section-sub">Upload a photo to see how it feels — the result shown afterward is a fixed sample output, not an analysis of your file.</p>
+  <div class="section-title">Try the detection flow</div>
+  <p class="section-sub">Upload a file to see how it feels — the result shown afterward is a fixed sample output, not an analysis of your file.</p>
 
-  <div class="demo-card">
-    <div class="upload-zone" id="dropZone">
-      <input type="file" id="fileInput" accept="image/*">
-      <div class="upload-icon">📷</div>
-      <div class="upload-title">Drop a photo here or click to browse</div>
-      <div class="upload-formats">Supports JPG, PNG and most photo formats</div>
-    </div>
-    <div class="preview-wrap" id="previewWrap">
-      <img id="previewImg" alt="Your upload">
-      <div class="preview-name" id="previewName"></div>
-    </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabImageBtn">🖼️ Image Detection</button>
+    <button class="mode-tab" id="tabVideoBtn">🎬 Video Detection</button>
+  </div>
 
-    <div class="filters">
-      <label class="sc"><input type="checkbox" checked> Person</label>
-      <label class="sc"><input type="checkbox" checked> Vehicle</label>
-      <label class="sc"><input type="checkbox" checked> Animal</label>
-      <label class="sc"><input type="checkbox" checked> Furniture</label>
-    </div>
-
-    <button class="run-btn" id="runBtn">🔍 Find Objects in My Photo</button>
-
-    <div class="processing" id="processing">
-      <div class="spinner"></div>
-      <div class="processing-msg" id="processingMsg">Scanning frame with YOLOv8…</div>
-    </div>
-
-    <div class="results" id="results">
-      <span class="sample-tag">🧪 Sample output — Demo Mode, not a real analysis of your photo</span>
-
-      <!-- Illustrated scene, not a real photo: original artwork, no real identifiable people -->
-      <div class="result-scene">
-        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#bfe1ff"/><stop offset="1" stop-color="#e8f5ff"/>
-            </linearGradient>
-          </defs>
-          <rect width="900" height="520" fill="url(#sky)"/>
-          <circle cx="800" cy="70" r="42" fill="#ffd873"/>
-          <rect y="400" width="900" height="120" fill="#bfe3b8"/>
-          <path d="M0 400 Q 450 370 900 400 V520 H0 Z" fill="#a9d9a0"/>
-          <!-- trees -->
-          <g opacity=".8">
-            <rect x="60" y="330" width="14" height="80" fill="#8a6b4d"/><circle cx="67" cy="310" r="42" fill="#5fa851"/>
-            <rect x="820" y="340" width="12" height="70" fill="#8a6b4d"/><circle cx="826" cy="322" r="36" fill="#5fa851"/>
-          </g>
-          <!-- car -->
-          <g id="obj-car">
-            <rect x="640" y="360" width="150" height="55" rx="12" fill="#366ED8"/>
-            <rect x="665" y="335" width="95" height="35" rx="10" fill="#366ED8"/>
-            <circle cx="672" cy="418" r="16" fill="#0b1220"/><circle cx="762" cy="418" r="16" fill="#0b1220"/>
-          </g>
-          <!-- dog -->
-          <g id="obj-dog">
-            <ellipse cx="540" cy="430" rx="34" ry="18" fill="#c9975a"/>
-            <circle cx="512" cy="418" r="15" fill="#c9975a"/>
-            <rect x="515" y="440" width="6" height="20" fill="#c9975a"/><rect x="560" y="440" width="6" height="20" fill="#c9975a"/>
-          </g>
-          <!-- person 1 (man) -->
-          <g id="obj-man">
-            <circle cx="230" cy="330" r="24" fill="#e8b48a"/>
-            <rect x="205" y="352" width="50" height="80" rx="14" fill="#5b7fd6"/>
-            <rect x="210" y="430" width="16" height="45" fill="#2b3550"/><rect x="234" y="430" width="16" height="45" fill="#2b3550"/>
-          </g>
-          <!-- person 2 (woman) -->
-          <g id="obj-woman">
-            <circle cx="340" cy="322" r="22" fill="#d99a70"/>
-            <path d="M312 344 h56 l14 96 h-84 z" fill="#7e22ce"/>
-            <rect x="316" y="440" width="14" height="38" fill="#2b3550"/><rect x="360" y="440" width="14" height="38" fill="#2b3550"/>
-          </g>
-          <!-- child -->
-          <g id="obj-child">
-            <circle cx="420" cy="360" r="16" fill="#e8b48a"/>
-            <rect x="404" y="376" width="32" height="52" rx="10" fill="#F6490D"/>
-            <rect x="407" y="428" width="10" height="28" fill="#2b3550"/><rect x="423" y="428" width="10" height="28" fill="#2b3550"/>
-          </g>
-
-          <!-- bounding boxes -->
-          <rect x="195" y="298" width="72" height="182" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
-          <text x="197" y="292" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#1 man 96.4%</text>
-
-          <rect x="304" y="292" width="90" height="192" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
-          <text x="306" y="286" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#2 woman 94.1%</text>
-
-          <rect x="392" y="340" width="60" height="122" fill="none" stroke="#7e22ce" stroke-width="3" stroke-dasharray="6 3" rx="4"/>
-          <text x="394" y="334" font-family="monospace" font-size="13" fill="#7e22ce" font-weight="700">#3 boy 88.7%</text>
-
-          <rect x="492" y="392" width="94" height="68" fill="none" stroke="#F6490D" stroke-width="3" rx="4"/>
-          <text x="494" y="386" font-family="monospace" font-size="13" fill="#c2410c" font-weight="700">#4 dog 71.2%</text>
-
-          <rect x="628" y="330" width="176" height="98" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
-          <text x="630" y="324" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#5 car 97.8%</text>
-        </svg>
+  <div class="demo-panel active" id="panelImage">
+    <div class="demo-card">
+      <div class="upload-zone" id="dropZoneImg">
+        <input type="file" id="fileInputImg" accept="image/*">
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">Drop a photo here or click to browse</div>
+        <div class="upload-formats">Supports JPG, PNG and most photo formats</div>
+      </div>
+      <div class="preview-wrap" id="previewWrapImg">
+        <img id="previewImgEl" alt="Your upload">
+        <div class="preview-name" id="previewNameImg"></div>
       </div>
 
-      <div class="legend">
-        <span><span class="dot" style="background:#16a34a"></span> High confidence (YOLOv8)</span>
-        <span><span class="dot" style="background:#F6490D"></span> Medium confidence</span>
-        <span><span class="dot" style="background:#7e22ce"></span> EfficientNet-B0 refined</span>
+      <div class="filters">
+        <label class="sc"><input type="checkbox" checked> Person</label>
+        <label class="sc"><input type="checkbox" checked> Vehicle</label>
+        <label class="sc"><input type="checkbox" checked> Animal</label>
+        <label class="sc"><input type="checkbox" checked> Furniture</label>
       </div>
 
-      <div class="group-header" style="border-color:#e9d5ff">🧠 EfficientNet-B0 Results <span class="group-count">1 object</span></div>
-      <div class="objects-grid">
-        <div class="obj-card" style="border-color:#7e22ce">
-          <div class="obj-swatch" style="background:#f3e8ff">🧒</div>
-          <div class="obj-name">boy</div>
-          <span class="obj-conf conf-mid">🤔 88.7%</span>
-          <span class="model-tag">🧠 EfficientNet-B0</span>
-        </div>
+      <button class="run-btn" id="runBtnImg">🔍 Find Objects in My Photo</button>
+
+      <div class="processing" id="processingImg">
+        <div class="spinner"></div>
+        <div class="processing-msg" id="processingMsgImg">Scanning frame with YOLOv8…</div>
       </div>
 
-      <div class="group-header" style="border-color:#dcfce7">⚡ YOLOv8 Results <span class="group-count">4 objects</span></div>
-      <div class="objects-grid">
-        <div class="obj-card" style="border-color:#16a34a">
-          <div class="obj-swatch" style="background:#dcfce7">🧑</div>
-          <div class="obj-name">man</div>
-          <span class="obj-conf conf-high">✅ 96.4%</span>
-          <span class="model-tag">⚡ YOLOv8</span>
+      <div class="results" id="resultsImg">
+        <span class="sample-tag">🧪 Sample output — Demo Mode, not a real analysis of your photo</span>
+
+        <div class="result-scene">
+          <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#bfe1ff"/><stop offset="1" stop-color="#e8f5ff"/>
+              </linearGradient>
+            </defs>
+            <rect width="900" height="520" fill="url(#sky)"/>
+            <circle cx="800" cy="70" r="42" fill="#ffd873"/>
+            <rect y="400" width="900" height="120" fill="#bfe3b8"/>
+            <path d="M0 400 Q 450 370 900 400 V520 H0 Z" fill="#a9d9a0"/>
+            <g opacity=".8">
+              <rect x="60" y="330" width="14" height="80" fill="#8a6b4d"/><circle cx="67" cy="310" r="42" fill="#5fa851"/>
+              <rect x="820" y="340" width="12" height="70" fill="#8a6b4d"/><circle cx="826" cy="322" r="36" fill="#5fa851"/>
+            </g>
+            <g id="obj-car">
+              <rect x="640" y="360" width="150" height="55" rx="12" fill="#366ED8"/>
+              <rect x="665" y="335" width="95" height="35" rx="10" fill="#366ED8"/>
+              <circle cx="672" cy="418" r="16" fill="#0b1220"/><circle cx="762" cy="418" r="16" fill="#0b1220"/>
+            </g>
+            <g id="obj-dog">
+              <ellipse cx="540" cy="430" rx="34" ry="18" fill="#c9975a"/>
+              <circle cx="512" cy="418" r="15" fill="#c9975a"/>
+              <rect x="515" y="440" width="6" height="20" fill="#c9975a"/><rect x="560" y="440" width="6" height="20" fill="#c9975a"/>
+            </g>
+            <g id="obj-man">
+              <circle cx="230" cy="330" r="24" fill="#e8b48a"/>
+              <rect x="205" y="352" width="50" height="80" rx="14" fill="#5b7fd6"/>
+              <rect x="210" y="430" width="16" height="45" fill="#2b3550"/><rect x="234" y="430" width="16" height="45" fill="#2b3550"/>
+            </g>
+            <g id="obj-woman">
+              <circle cx="340" cy="322" r="22" fill="#d99a70"/>
+              <path d="M312 344 h56 l14 96 h-84 z" fill="#7e22ce"/>
+              <rect x="316" y="440" width="14" height="38" fill="#2b3550"/><rect x="360" y="440" width="14" height="38" fill="#2b3550"/>
+            </g>
+            <g id="obj-child">
+              <circle cx="420" cy="360" r="16" fill="#e8b48a"/>
+              <rect x="404" y="376" width="32" height="52" rx="10" fill="#F6490D"/>
+              <rect x="407" y="428" width="10" height="28" fill="#2b3550"/><rect x="423" y="428" width="10" height="28" fill="#2b3550"/>
+            </g>
+
+            <rect x="195" y="298" width="72" height="182" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+            <text x="197" y="292" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#1 man 96.4%</text>
+
+            <rect x="304" y="292" width="90" height="192" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+            <text x="306" y="286" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#2 woman 94.1%</text>
+
+            <rect x="392" y="340" width="60" height="122" fill="none" stroke="#7e22ce" stroke-width="3" stroke-dasharray="6 3" rx="4"/>
+            <text x="394" y="334" font-family="monospace" font-size="13" fill="#7e22ce" font-weight="700">#3 boy 88.7%</text>
+
+            <rect x="492" y="392" width="94" height="68" fill="none" stroke="#F6490D" stroke-width="3" rx="4"/>
+            <text x="494" y="386" font-family="monospace" font-size="13" fill="#c2410c" font-weight="700">#4 dog 71.2%</text>
+
+            <rect x="628" y="330" width="176" height="98" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+            <text x="630" y="324" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#5 car 97.8%</text>
+          </svg>
         </div>
-        <div class="obj-card" style="border-color:#16a34a">
-          <div class="obj-swatch" style="background:#dcfce7">👩</div>
-          <div class="obj-name">woman</div>
-          <span class="obj-conf conf-high">✅ 94.1%</span>
-          <span class="model-tag">⚡ YOLOv8</span>
+
+        <div class="legend">
+          <span><span class="dot" style="background:#16a34a"></span> High confidence (YOLOv8)</span>
+          <span><span class="dot" style="background:#F6490D"></span> Medium confidence</span>
+          <span><span class="dot" style="background:#7e22ce"></span> EfficientNet-B0 refined</span>
         </div>
-        <div class="obj-card" style="border-color:#F6490D">
-          <div class="obj-swatch" style="background:#ffedd5">🐕</div>
-          <div class="obj-name">dog</div>
-          <span class="obj-conf conf-mid">🤔 71.2%</span>
-          <span class="model-tag">⚡ YOLOv8</span>
+
+        <div class="group-header" style="border-color:#e9d5ff">🧠 EfficientNet-B0 Results <span class="group-count">1 object</span></div>
+        <div class="objects-grid">
+          <div class="obj-card" style="border-color:#7e22ce">
+            <div class="obj-swatch" style="background:#f3e8ff">🧒</div>
+            <div class="obj-name">boy</div>
+            <span class="obj-conf conf-mid">🤔 88.7%</span>
+            <span class="model-tag">🧠 EfficientNet-B0</span>
+          </div>
         </div>
-        <div class="obj-card" style="border-color:#16a34a">
-          <div class="obj-swatch" style="background:#dcfce7">🚗</div>
-          <div class="obj-name">car</div>
-          <span class="obj-conf conf-high">✅ 97.8%</span>
-          <span class="model-tag">⚡ YOLOv8</span>
+
+        <div class="group-header" style="border-color:#dcfce7">⚡ YOLOv8 Results <span class="group-count">4 objects</span></div>
+        <div class="objects-grid">
+          <div class="obj-card" style="border-color:#16a34a">
+            <div class="obj-swatch" style="background:#dcfce7">🧑</div>
+            <div class="obj-name">man</div>
+            <span class="obj-conf conf-high">✅ 96.4%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+          </div>
+          <div class="obj-card" style="border-color:#16a34a">
+            <div class="obj-swatch" style="background:#dcfce7">👩</div>
+            <div class="obj-name">woman</div>
+            <span class="obj-conf conf-high">✅ 94.1%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+          </div>
+          <div class="obj-card" style="border-color:#F6490D">
+            <div class="obj-swatch" style="background:#ffedd5">🐕</div>
+            <div class="obj-name">dog</div>
+            <span class="obj-conf conf-mid">🤔 71.2%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+          </div>
+          <div class="obj-card" style="border-color:#16a34a">
+            <div class="obj-swatch" style="background:#dcfce7">🚗</div>
+            <div class="obj-name">car</div>
+            <span class="obj-conf conf-high">✅ 97.8%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-panel" id="panelVideo">
+    <div class="demo-card">
+      <div class="upload-zone" id="dropZoneVid">
+        <input type="file" id="fileInputVid" accept="video/*">
+        <div class="upload-icon">🎬</div>
+        <div class="upload-title">Drop a video here or click to browse</div>
+        <div class="upload-formats">Supports MP4, AVI, MOV, MKV and most video formats</div>
+      </div>
+      <div class="preview-wrap" id="previewWrapVid">
+        <video id="previewVidEl" controls muted></video>
+        <div class="preview-name" id="previewNameVid"></div>
+      </div>
+
+      <div class="filters">
+        <label class="sc"><input type="checkbox" checked> Person</label>
+        <label class="sc"><input type="checkbox" checked> Vehicle</label>
+        <label class="sc"><input type="checkbox" checked> Animal</label>
+        <label class="sc"><input type="checkbox" checked> Furniture</label>
+      </div>
+
+      <button class="run-btn" id="runBtnVid">🎥 Find Objects in My Video</button>
+
+      <div class="processing" id="processingVid">
+        <div class="spinner"></div>
+        <div class="processing-msg" id="processingMsgVid">Reading video frames…</div>
+      </div>
+
+      <div class="results" id="resultsVid">
+        <span class="sample-tag">🧪 Sample output — Demo Mode, not a real analysis of your video</span>
+
+        <div class="video-stats">
+          <div class="vstat"><b>5</b><span>Unique tracks</span></div>
+          <div class="vstat"><b>342</b><span>Frames analyzed</span></div>
+          <div class="vstat"><b>14.2s</b><span>Duration</span></div>
+          <div class="vstat"><b>24</b><span>FPS</span></div>
+        </div>
+
+        <div class="result-scene">
+          <span class="play-badge">▶ Annotated frame · sample</span>
+          <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#c7e6ff"/><stop offset="1" stop-color="#eef8ff"/>
+              </linearGradient>
+            </defs>
+            <rect width="900" height="520" fill="url(#sky2)"/>
+            <rect y="400" width="900" height="120" fill="#d9dee8"/>
+            <rect y="392" width="900" height="10" fill="#c3cadb"/>
+            <g opacity=".85">
+              <rect x="90" y="60" width="720" height="330" fill="none" stroke="#ffffff" stroke-dasharray="3 6" stroke-width="2" opacity=".5"/>
+            </g>
+            <g id="v-car">
+              <rect x="120" y="345" width="140" height="52" rx="12" fill="#F6490D"/>
+              <rect x="145" y="320" width="88" height="32" rx="9" fill="#F6490D"/>
+              <circle cx="150" cy="400" r="15" fill="#0b1220"/><circle cx="235" cy="400" r="15" fill="#0b1220"/>
+            </g>
+            <g id="v-p1">
+              <circle cx="430" cy="300" r="20" fill="#e8b48a"/>
+              <rect x="410" y="320" width="42" height="66" rx="12" fill="#7c3aed"/>
+              <rect x="413" y="386" width="14" height="36" fill="#2b3550"/><rect x="435" y="386" width="14" height="36" fill="#2b3550"/>
+            </g>
+            <g id="v-p2">
+              <circle cx="520" cy="292" r="19" fill="#d99a70"/>
+              <rect x="500" y="311" width="42" height="70" rx="12" fill="#366ED8"/>
+              <rect x="503" y="381" width="14" height="36" fill="#2b3550"/><rect x="525" y="381" width="14" height="36" fill="#2b3550"/>
+            </g>
+            <g id="v-bike">
+              <circle cx="700" cy="392" r="26" fill="none" stroke="#0b1220" stroke-width="4"/>
+              <circle cx="760" cy="392" r="26" fill="none" stroke="#0b1220" stroke-width="4"/>
+              <path d="M700 392 L730 340 L760 392 M730 340 L715 392" stroke="#0b1220" stroke-width="4" fill="none"/>
+            </g>
+
+            <rect x="98" y="308" width="180" height="102" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+            <text x="100" y="302" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#1 car · track_04 · 95.2%</text>
+
+            <rect x="404" y="278" width="58" height="122" fill="none" stroke="#7e22ce" stroke-width="3" stroke-dasharray="6 3" rx="4"/>
+            <text x="406" y="272" font-family="monospace" font-size="13" fill="#7e22ce" font-weight="700">#2 woman · track_01 · 91.0%</text>
+
+            <rect x="494" y="270" width="60" height="130" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+            <text x="496" y="264" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#3 man · track_02 · 93.7%</text>
+
+            <rect x="668" y="360" width="118" height="66" fill="none" stroke="#F6490D" stroke-width="3" rx="4"/>
+            <text x="670" y="354" font-family="monospace" font-size="13" fill="#c2410c" font-weight="700">#4 bicycle · track_05 · 68.4%</text>
+          </svg>
+        </div>
+
+        <div class="legend">
+          <span><span class="dot" style="background:#16a34a"></span> High confidence (YOLOv8)</span>
+          <span><span class="dot" style="background:#F6490D"></span> Medium confidence</span>
+          <span><span class="dot" style="background:#7e22ce"></span> EfficientNet-B0 refined</span>
+        </div>
+
+        <div class="group-header" style="border-color:#e9d5ff">🧠 EfficientNet-B0 Results <span class="group-count">1 tracked object</span></div>
+        <div class="objects-grid">
+          <div class="obj-card" style="border-color:#7e22ce">
+            <div class="obj-swatch" style="background:#f3e8ff">👩</div>
+            <div class="obj-name">woman</div>
+            <span class="obj-conf conf-high">✅ 91.0%</span>
+            <span class="model-tag">🧠 EfficientNet-B0</span>
+            <span class="track-tag">track_01 · 128 frames</span>
+          </div>
+        </div>
+
+        <div class="group-header" style="border-color:#dcfce7">⚡ YOLOv8 Results <span class="group-count">3 tracked objects</span></div>
+        <div class="objects-grid">
+          <div class="obj-card" style="border-color:#16a34a">
+            <div class="obj-swatch" style="background:#dcfce7">🧑</div>
+            <div class="obj-name">man</div>
+            <span class="obj-conf conf-high">✅ 93.7%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+            <span class="track-tag">track_02 · 210 frames</span>
+          </div>
+          <div class="obj-card" style="border-color:#16a34a">
+            <div class="obj-swatch" style="background:#dcfce7">🚗</div>
+            <div class="obj-name">car</div>
+            <span class="obj-conf conf-high">✅ 95.2%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+            <span class="track-tag">track_04 · 342 frames</span>
+          </div>
+          <div class="obj-card" style="border-color:#F6490D">
+            <div class="obj-swatch" style="background:#ffedd5">🚲</div>
+            <div class="obj-name">bicycle</div>
+            <span class="obj-conf conf-mid">🤔 68.4%</span>
+            <span class="model-tag">⚡ YOLOv8</span>
+            <span class="track-tag">track_05 · 96 frames</span>
+          </div>
         </div>
       </div>
     </div>
@@ -306,7 +444,8 @@ cd Detecting-and-classifying-multiple-objects-in-images-and-videos/hybrid</pre>
       <div class="step-item">
         <p><span class="step-num-inline">3</span>Run the app locally</p>
         <pre>python app.py
-# → open http://localhost:5000</pre>
+# → open http://localhost:5000
+# both /image and /video routes work exactly like this demo, for real</pre>
       </div>
 
       <div class="step-item">
@@ -328,69 +467,107 @@ docker run -p 7860:7860 -e PORT=7860 hybrid-vision
 <script>
 document.getElementById('year').textContent = new Date().getFullYear();
 
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const previewWrap = document.getElementById('previewWrap');
-const previewImg = document.getElementById('previewImg');
-const previewName = document.getElementById('previewName');
-const runBtn = document.getElementById('runBtn');
-const processing = document.getElementById('processing');
-const processingMsg = document.getElementById('processingMsg');
-const results = document.getElementById('results');
+const tabImageBtn = document.getElementById('tabImageBtn');
+const tabVideoBtn = document.getElementById('tabVideoBtn');
+const panelImage = document.getElementById('panelImage');
+const panelVideo = document.getElementById('panelVideo');
 
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    previewImg.src = e.target.result;
+tabImageBtn.addEventListener('click', () => {
+  tabImageBtn.classList.add('active'); tabVideoBtn.classList.remove('active');
+  panelImage.classList.add('active'); panelVideo.classList.remove('active');
+});
+tabVideoBtn.addEventListener('click', () => {
+  tabVideoBtn.classList.add('active'); tabImageBtn.classList.remove('active');
+  panelVideo.classList.add('active'); panelImage.classList.remove('active');
+});
+
+function wireDemo({dropZoneId, fileInputId, previewWrapId, previewElId, previewNameId, runBtnId, processingId, processingMsgId, resultsId, steps, isVideo}) {
+  const dropZone = document.getElementById(dropZoneId);
+  const fileInput = document.getElementById(fileInputId);
+  const previewWrap = document.getElementById(previewWrapId);
+  const previewEl = document.getElementById(previewElId);
+  const previewName = document.getElementById(previewNameId);
+  const runBtn = document.getElementById(runBtnId);
+  const processing = document.getElementById(processingId);
+  const processingMsg = document.getElementById(processingMsgId);
+  const results = document.getElementById(resultsId);
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (isVideo) {
+      previewEl.src = URL.createObjectURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = e => { previewEl.src = e.target.result; };
+      reader.readAsDataURL(file);
+    }
     previewName.textContent = file.name;
     previewWrap.style.display = 'block';
     results.style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-});
+  });
 
-['dragover','dragenter'].forEach(evt => dropZone.addEventListener(evt, e => {
-  e.preventDefault(); dropZone.classList.add('drag');
-}));
-['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, e => {
-  dropZone.classList.remove('drag');
-}));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  if (e.dataTransfer.files[0]) {
-    fileInput.files = e.dataTransfer.files;
-    fileInput.dispatchEvent(new Event('change'));
-  }
-});
-
-const steps = [
-  'Scanning frame with YOLOv8…',
-  'Cropping low-confidence detections…',
-  'Routing crops to EfficientNet-B0…',
-  'Cross-checking second opinions…',
-  'Drawing annotated result…'
-];
-
-runBtn.addEventListener('click', () => {
-  runBtn.disabled = true;
-  results.style.display = 'none';
-  processing.style.display = 'block';
-  let i = 0;
-  processingMsg.textContent = steps[0];
-  const interval = setInterval(() => {
-    i++;
-    if (i < steps.length) {
-      processingMsg.textContent = steps[i];
-    } else {
-      clearInterval(interval);
-      processing.style.display = 'none';
-      results.style.display = 'block';
-      runBtn.disabled = false;
-      results.scrollIntoView({behavior:'smooth', block:'start'});
+  ['dragover','dragenter'].forEach(evt => dropZone.addEventListener(evt, e => {
+    e.preventDefault(); dropZone.classList.add('drag');
+  }));
+  ['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, () => {
+    dropZone.classList.remove('drag');
+  }));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) {
+      fileInput.files = e.dataTransfer.files;
+      fileInput.dispatchEvent(new Event('change'));
     }
-  }, 700);
+  });
+
+  runBtn.addEventListener('click', () => {
+    runBtn.disabled = true;
+    results.style.display = 'none';
+    processing.style.display = 'block';
+    let i = 0;
+    processingMsg.textContent = steps[0];
+    const interval = setInterval(() => {
+      i++;
+      if (i < steps.length) {
+        processingMsg.textContent = steps[i];
+      } else {
+        clearInterval(interval);
+        processing.style.display = 'none';
+        results.style.display = 'block';
+        runBtn.disabled = false;
+        results.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }, 700);
+  });
+}
+
+wireDemo({
+  dropZoneId:'dropZoneImg', fileInputId:'fileInputImg', previewWrapId:'previewWrapImg',
+  previewElId:'previewImgEl', previewNameId:'previewNameImg', runBtnId:'runBtnImg',
+  processingId:'processingImg', processingMsgId:'processingMsgImg', resultsId:'resultsImg',
+  isVideo:false,
+  steps:[
+    'Scanning frame with YOLOv8…',
+    'Cropping low-confidence detections…',
+    'Routing crops to EfficientNet-B0…',
+    'Cross-checking second opinions…',
+    'Drawing annotated result…'
+  ]
+});
+
+wireDemo({
+  dropZoneId:'dropZoneVid', fileInputId:'fileInputVid', previewWrapId:'previewWrapVid',
+  previewElId:'previewVidEl', previewNameId:'previewNameVid', runBtnId:'runBtnVid',
+  processingId:'processingVid', processingMsgId:'processingMsgVid', resultsId:'resultsVid',
+  isVideo:true,
+  steps:[
+    'Reading video frames…',
+    'Running YOLOv8 across frames…',
+    'Tracking objects between frames…',
+    'Routing low-confidence tracks to EfficientNet-B0…',
+    'Aggregating tracking summary…'
+  ]
 });
 </script>
 </body>
