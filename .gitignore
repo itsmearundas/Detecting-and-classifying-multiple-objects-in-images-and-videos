@@ -1,0 +1,27 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+
+# Uploaded/generated media (keep the folder, ignore its contents)
+static/uploads/*
+!static/uploads/.gitkeep
+test images/
+*.mp4
+*.jpg
+*.jpeg
+*.png
+*.webp
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

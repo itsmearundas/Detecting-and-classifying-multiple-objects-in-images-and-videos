@@ -1,0 +1,22 @@
+# ── Core web app ──────────────────────────────────────────────
+flask==3.0.3
+flask-cors==4.0.1
+gunicorn==22.0.0
+python-dotenv==1.0.1
+
+# ── Vision / ML pipeline ─────────────────────────────────────
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+
+ultralytics>=8.3.0
+opencv-python-headless>=4.10.0.84,<5
+numpy>=2.0
+pillow>=11.0
+
+# ── Optional: large-crop face age/gender fallback ───────────────
+# Only used if installed (utils.py degrades gracefully without it).
+# Adds ~1GB+ (tensorflow) to the build, so it's split out into
+# requirements-full.txt -- most free hosting tiers can't fit it
+# alongside torch/ultralytics. Install it only on a host with enough
+# build memory/disk (see requirements-full.txt).

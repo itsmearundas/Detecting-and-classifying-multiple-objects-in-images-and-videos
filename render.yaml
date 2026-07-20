@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: hybrid-vision
+    runtime: docker
+    # NOTE: "free" (512MB RAM / 0.1 vCPU) is too small for torch +
+    # torchvision + ultralytics + two loaded models — it OOMs / times out
+    # during boot. Use at least "standard" (2GB RAM / 1 vCPU). If this is
+    # a Blueprint-managed service, changing this value and re-syncing the
+    # Blueprint updates the live plan; otherwise change it in the Render
+    # dashboard under Settings -> Instance Type.
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: MAX_CONTENT_LENGTH_MB
+        value: "200"

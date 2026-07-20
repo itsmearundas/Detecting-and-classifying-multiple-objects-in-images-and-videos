@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Vision AI — Multi-Object Detection &amp; Classification</title>
+<meta name="description" content="Detect and classify every object in your images and videos with a hybrid YOLOv8 + EfficientNet-B0 pipeline.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23064ACB'/%3E%3Crect x='24' y='24' width='34' height='34' rx='6' fill='none' stroke='%23F6490D' stroke-width='6'/%3E%3Ccircle cx='70' cy='70' r='14' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --navy:#064ACB; --navy-deep:#021d6b; --blue:#366ED8; --orange:#F6490D;
+        --violet:#7c3aed; --violet-2:#a855f7;
+        --ink:#0b1220; --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
+        --line:#e6eaf2; --panel:#f7f9fc; --white:#ffffff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    img,svg{display:block;max-width:100%}
+    a{color:inherit}
+
+    /* ═══════════════ NAVBAR ═══════════════ */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    .nav-inner{max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.01em;text-decoration:none}
+    .brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(6,74,203,.35)}
+    .brand-mark svg{width:17px;height:17px}
+    .brand span{color:var(--ink)}
+    .brand em{font-style:normal;background:linear-gradient(90deg,var(--orange),#ff7a45);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-links{display:flex;align-items:center;gap:6px}
+    .nav-links a{font-size:13.5px;font-weight:700;color:var(--muted);text-decoration:none;padding:9px 16px;border-radius:9px;transition:color .15s,background .15s}
+    .nav-links a:hover{color:var(--navy);background:rgba(6,74,203,.07)}
+    .nav-cta{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff !important;padding:9px 18px !important;border-radius:9px;box-shadow:0 3px 0 #043898,0 4px 14px rgba(6,74,203,.28)}
+    .nav-cta:hover{color:#fff !important;background:linear-gradient(135deg,var(--navy),var(--blue)) !important;transform:translateY(-1px)}
+    @media(max-width:640px){.nav-links a:not(.nav-cta){display:none}}
+
+    /* ═══════════════ HERO ═══════════════ */
+    .hero{position:relative;overflow:hidden;background:linear-gradient(150deg,var(--navy-deep) 0%,var(--navy) 46%,var(--blue) 100%);padding:96px 24px 0}
+    .hero-mesh{position:absolute;inset:0;z-index:0;pointer-events:none;
+        background:
+            radial-gradient(ellipse 55% 75% at 12% 20%,rgba(246,73,13,.16) 0%,transparent 60%),
+            radial-gradient(ellipse 50% 65% at 88% 12%,rgba(124,58,237,.22) 0%,transparent 55%),
+            radial-gradient(ellipse 45% 60% at 60% 95%,rgba(54,110,216,.28) 0%,transparent 55%);
+        animation:meshShift 12s ease-in-out infinite alternate}
+    @keyframes meshShift{0%{opacity:.75;transform:scale(1) rotate(0)}100%{opacity:1;transform:scale(1.06) rotate(1deg)}}
+    .dot-grid{position:absolute;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1px);background-size:26px 26px;animation:dotDrift 22s linear infinite}
+    @keyframes dotDrift{from{background-position:0 0}to{background-position:26px 26px}}
+    .bubble{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(1px)}
+    .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;pointer-events:none;z-index:1;animation:sparkFloat linear infinite;opacity:0}
+    @keyframes sparkFloat{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:.9}85%{opacity:.5}100%{transform:translateY(-140px) scale(.3);opacity:0}}
+
+    .hero-inner{position:relative;z-index:2;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;padding-bottom:64px}
+    @media(max-width:900px){.hero-inner{grid-template-columns:1fr;text-align:center}}
+
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(246,73,13,.16);color:#ffbfa6;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;border-radius:999px;border:1px solid rgba(246,73,13,.38);margin-bottom:22px;backdrop-filter:blur(4px);animation:fadeSlideDown .6s ease both}
+    .eyebrow .dot{width:7px;height:7px;background:var(--orange);border-radius:50%;animation:dotPulse 1.4s ease-in-out infinite;flex-shrink:0}
+    @keyframes dotPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(246,73,13,.55)}50%{transform:scale(1.3);box-shadow:0 0 0 5px rgba(246,73,13,0)}}
+    @keyframes fadeSlideDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+
+    .hero h1{font-family:'Manrope',sans-serif;font-size:clamp(32px,4.4vw,52px);font-weight:800;color:#fff;line-height:1.14;letter-spacing:-.02em;margin-bottom:18px;text-shadow:0 4px 24px rgba(0,0,0,.25);animation:fadeSlideDown .6s .1s ease both}
+    .hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--orange),#ff9770,var(--orange));background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite}
+    @keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+    .hero p{font-size:16.5px;color:#c9d8ff;max-width:490px;line-height:1.75;font-weight:600;margin-bottom:32px;animation:fadeSlideDown .6s .2s ease both}
+    @media(max-width:900px){.hero p{max-width:none;margin-left:auto;margin-right:auto}}
+
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:40px;animation:fadeSlideDown .6s .3s ease both}
+    @media(max-width:900px){.hero-ctas{justify-content:center}}
+    .btn{display:inline-flex;align-items:center;gap:9px;font-family:'Nunito',sans-serif;font-size:14.5px;font-weight:800;padding:14px 26px;border-radius:12px;border:none;cursor:pointer;text-decoration:none;letter-spacing:.01em;transition:transform .15s,box-shadow .2s,opacity .2s}
+    .btn-primary{background:linear-gradient(135deg,var(--orange),#ff7a45);color:#fff;box-shadow:0 4px 0 #c23708,0 8px 22px rgba(246,73,13,.35)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #c23708,0 14px 30px rgba(246,73,13,.4)}
+    .btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #c23708}
+    .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.28);backdrop-filter:blur(6px)}
+    .btn-ghost:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}
+
+    .hero-stats{display:flex;gap:34px;flex-wrap:wrap;animation:fadeSlideDown .6s .4s ease both}
+    @media(max-width:900px){.hero-stats{justify-content:center}}
+    .stat b{display:block;font-family:'Manrope',sans-serif;font-size:24px;font-weight:800;color:#fff;letter-spacing:-.01em}
+    .stat span{font-size:11.5px;color:#a9c0f2;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+
+    /* ── hero visual: annotated detection mock ── */
+    .hero-visual{position:relative;animation:fadeIn .8s .25s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .visual-card{position:relative;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:14px;backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .visual-card svg{border-radius:12px;width:100%;height:auto}
+    .float-chip{position:absolute;display:flex;align-items:center;gap:7px;background:rgba(11,18,32,.85);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:800;padding:7px 12px;border-radius:999px;backdrop-filter:blur(8px);box-shadow:0 8px 20px rgba(0,0,0,.3);animation:chipFloat 4.5s ease-in-out infinite}
+    .float-chip i{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.25)}
+    @keyframes chipFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .chip-1{top:-14px;left:18px;animation-delay:0s}
+    .chip-2{bottom:-14px;right:18px;animation-delay:1.4s}
+    @media(max-width:900px){.float-chip{display:none}}
+
+    .hero-wave{display:block;width:100%;height:64px;position:relative;z-index:2;margin-top:40px}
+
+    /* ═══════════════ SECTION SHELL ═══════════════ */
+    .section{max-width:1160px;margin:0 auto;padding:88px 24px}
+    .section-tight{padding-top:0}
+    .kicker{display:flex;align-items:center;justify-content:center;gap:10px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--orange);margin-bottom:14px}
+    .kicker::before,.kicker::after{content:'';width:26px;height:2px;background:currentColor;opacity:.4;border-radius:2px}
+    .section-title{font-family:'Manrope',sans-serif;font-size:clamp(24px,3vw,34px);font-weight:800;text-align:center;letter-spacing:-.02em;color:var(--ink);margin-bottom:12px}
+    .section-sub{text-align:center;font-size:15px;color:var(--muted);max-width:560px;margin:0 auto 52px;line-height:1.7;font-weight:600}
+
+    /* ═══════════════ MODE CARDS ═══════════════ */
+    .sections-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    @media(max-width:680px){.sections-grid{grid-template-columns:1fr}}
+
+    .section-card{position:relative;background:var(--white);border:1.5px solid var(--line);border-radius:22px;padding:38px 30px 34px;box-shadow:0 1px 2px rgba(6,74,203,.05),0 4px 10px rgba(6,74,203,.06),0 10px 24px rgba(6,74,203,.05),0 3px 0 #d9e2f5,inset 0 1px 0 rgba(255,255,255,.9);transition:box-shadow .25s,transform .2s;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden}
+    .section-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:22px 22px 0 0}
+    .card-image::before{background:linear-gradient(90deg,var(--navy),var(--blue))}
+    .card-video::before{background:linear-gradient(90deg,var(--violet),var(--violet-2))}
+    .section-card:hover{transform:translateY(-6px);box-shadow:0 2px 4px rgba(6,74,203,.08),0 10px 22px rgba(6,74,203,.12),0 28px 46px rgba(6,74,203,.09),0 4px 0 #b8cbf0,inset 0 1px 0 rgba(255,255,255,.9)}
+
+    .card-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:20px}
+    .card-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
+    .card-image .card-icon-wrap{background:linear-gradient(135deg,#e8f0ff,#dbe7ff);box-shadow:inset 0 0 0 1px rgba(6,74,203,.12)}
+    .card-video .card-icon-wrap{background:linear-gradient(135deg,#f1e8ff,#e9dcff);box-shadow:inset 0 0 0 1px rgba(124,58,237,.14)}
+
+    .card-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:4px 12px;border-radius:999px}
+    .status-ready{background:#edf6f0;color:#166534;border:1.5px solid #b7dfc4}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#166534;flex-shrink:0;animation:dotPulse2 1.4s ease-in-out infinite}
+    @keyframes dotPulse2{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(22,101,52,.5)}50%{transform:scale(1.3);box-shadow:0 0 0 4px rgba(22,101,52,0)}}
+
+    .section-card h2{font-family:'Manrope',sans-serif;font-size:21px;font-weight:800;color:var(--text);margin-bottom:9px;letter-spacing:-.01em}
+    .section-card p{font-size:13.8px;color:var(--muted);line-height:1.75;margin-bottom:22px;flex:1}
+    .card-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:24px}
+    .tag{font-size:10.5px;font-weight:800;color:var(--navy);background:#eef3ff;border:1px solid #dbe6ff;padding:4px 10px;border-radius:7px;letter-spacing:.02em}
+    .card-video .tag{color:#6d28d9;background:#f4eeff;border-color:#e4d6ff}
+
+    .card-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;padding:13px 28px;border-radius:12px;border:none;cursor:pointer;text-decoration:none;transition:opacity .2s,transform .15s,box-shadow .2s;letter-spacing:.02em}
+    .btn-image{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;box-shadow:0 4px 0 #043898,0 6px 20px rgba(6,74,203,.3)}
+    .btn-image:hover{opacity:.94;transform:translateY(-2px);box-shadow:0 6px 0 #043898,0 12px 28px rgba(6,74,203,.35)}
+    .btn-image:active{transform:translateY(2px);box-shadow:0 2px 0 #043898}
+    .btn-video{background:linear-gradient(135deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 4px 0 #5b21b6,0 6px 20px rgba(124,58,237,.3)}
+    .btn-video:hover{opacity:.94;transform:translateY(-2px);box-shadow:0 6px 0 #5b21b6,0 12px 28px rgba(124,58,237,.35)}
+    .btn-video:active{transform:translateY(2px);box-shadow:0 2px 0 #5b21b6}
+
+    /* ═══════════════ HOW IT WORKS ═══════════════ */
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+    @media(max-width:780px){.steps{grid-template-columns:1fr}}
+    .step{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:18px;padding:30px 26px}
+    .step-num{font-family:'Manrope',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+    .step h3{font-family:'Manrope',sans-serif;font-size:16.5px;font-weight:800;margin-bottom:8px;color:var(--ink)}
+    .step p{font-size:13.5px;color:var(--muted);line-height:1.7;font-weight:600}
+    .step-arrow{position:absolute;top:34px;right:-30px;color:var(--faint);font-size:20px}
+    @media(max-width:780px){.step-arrow{display:none}}
+
+    /* ═══════════════ TECH STRIP ═══════════════ */
+    .tech-strip{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .tech-inner{max-width:1160px;margin:0 auto;padding:36px 24px;display:flex;align-items:center;justify-content:center;gap:14px 34px;flex-wrap:wrap}
+    .tech-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+    .tech-pill{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--text)}
+    .tech-pill i{width:7px;height:7px;border-radius:50%;background:var(--navy)}
+
+    /* ═══════════════ FOOTER ═══════════════ */
+    footer{background:var(--navy-deep);color:#c7d3f2;padding:52px 24px 28px}
+    .footer-inner{max-width:1160px;margin:0 auto;display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .footer-brand{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:15px;color:#fff}
+    .footer-brand .brand-mark{box-shadow:0 3px 10px rgba(0,0,0,.35)}
+    .footer-desc{font-size:13px;color:#93a3cc;max-width:320px;line-height:1.7;margin-top:10px;font-weight:600}
+    .footer-links{display:flex;gap:56px;flex-wrap:wrap}
+    .footer-col h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#7f92c2;margin-bottom:14px}
+    .footer-col a{display:block;font-size:13.5px;color:#d3dcf4;text-decoration:none;font-weight:700;margin-bottom:10px;transition:color .15s}
+    .footer-col a:hover{color:#fff}
+    .footer-bottom{max-width:1160px;margin:0 auto;padding-top:22px;text-align:center;font-size:12.5px;color:#7f92c2;font-weight:600}
+
+    ::selection{background:rgba(246,73,13,.25)}
+</style>
+</head>
+<body id="top">
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="#top" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="white" stroke-width="2"/><circle cx="17" cy="17" r="4" stroke="white" stroke-width="2"/></svg>
+            </span>
+            <span>Hybrid<em>Vision</em></span>
+        </a>
+        <div class="nav-links">
+            <a href="#modes">Modes</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#stack">Tech stack</a>
+            <a href="/image" class="nav-cta">Get started →</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="header-root">
+    <div class="hero-mesh"></div>
+    <div class="dot-grid"></div>
+
+    <div class="hero-inner">
+        <div>
+            <!-- <div class="eyebrow"><span class="dot"></span> YOLOv8 + EfficientNet‑B0 Hybrid Pipeline</div> -->
+            <h1><em>Detect &amp; classify</em><br>every object in your photos and videos</h1>
+            <p>Upload an image or a video clip and get instant, annotated results — people, vehicles, animals and furniture identified with confidence scores, frame by frame.</p>
+            <div class="hero-ctas">
+                <a href="/image" class="btn btn-primary">🔍&nbsp; Try Image Detection</a>
+                <a href="/video" class="btn btn-ghost">🎬&nbsp; Try Video Detection</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><b>5</b><span>Object Categories</span></div>
+                <div class="stat"><b>17+</b><span>Detectable Classes</span></div>
+                <div class="stat"><b>2</b><span>Fused AI Models</span></div>
+                <div class="stat"><b>&lt;1s</b><span>Per-frame Inference</span></div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="float-chip chip-1"><i></i> woman · 96.4%</div>
+            <div class="float-chip chip-2"><i></i> bicycle · 91.2%</div>
+            <div class="visual-card">
+                <svg viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#12245c"/>
+                            <stop offset="1" stop-color="#1c3f9e"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="460" height="320" rx="12" fill="url(#bg)"/>
+                    <circle cx="90" cy="70" r="46" fill="#ffffff" opacity=".05"/>
+                    <circle cx="390" cy="250" r="70" fill="#F6490D" opacity=".08"/>
+                    <!-- person shape -->
+                    <g>
+                        <circle cx="130" cy="120" r="20" fill="#9fb8ff" opacity=".9"/>
+                        <rect x="105" y="142" width="50" height="80" rx="14" fill="#9fb8ff" opacity=".9"/>
+                        <rect x="82" y="108" width="96" height="130" rx="10" fill="none" stroke="#F6490D" stroke-width="2.5" stroke-dasharray="6 4"/>
+                    </g>
+                    <!-- bicycle-ish shape -->
+                    <g stroke="#c9d8ff" stroke-width="4" fill="none" opacity=".85">
+                        <circle cx="290" cy="235" r="30"/>
+                        <circle cx="370" cy="235" r="30"/>
+                        <path d="M290 235 L330 175 L370 235 M330 175 L300 235 M330 175 L355 175"/>
+                    </g>
+                    <rect x="252" y="140" width="146" height="110" rx="10" fill="none" stroke="#34d399" stroke-width="2.5" stroke-dasharray="6 4"/>
+                    <!-- scan line -->
+                    <rect x="0" y="0" width="460" height="3" fill="#F6490D" opacity=".7">
+                        <animate attributeName="y" values="0;318;0" dur="4s" repeatCount="indefinite"/>
+                    </rect>
+                    <!-- small confidence tags -->
+                    <rect x="82" y="90" width="88" height="18" rx="4" fill="#F6490D"/>
+                    <text x="90" y="103" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#fff">woman 0.96</text>
+                    <rect x="252" y="122" width="94" height="18" rx="4" fill="#34d399"/>
+                    <text x="260" y="135" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#0b1220">bicycle 0.91</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <svg class="hero-wave" viewBox="0 0 1440 64" preserveAspectRatio="none"><path fill="#ffffff" d="M0,32 C240,64 480,0 720,16 C960,32 1200,64 1440,32 L1440,64 L0,64 Z"/></svg>
+</section>
+
+<!-- ═══════════════ MODES ═══════════════ -->
+<div class="section section-tight" id="modes">
+    <div class="kicker">Choose a mode</div>
+    <h2 class="section-title">Two ways to see clearly</h2>
+    <p class="section-sub">Pick a workflow below — both run the same hybrid YOLOv8 + EfficientNet‑B0 pipeline under the hood.</p>
+
+    <div class="sections-grid">
+        <!-- IMAGE SECTION -->
+        <div class="section-card card-image">
+            <div class="card-top">
+                <span class="card-icon-wrap">🖼️</span>
+                <span class="card-status status-ready"><span class="status-dot"></span> Ready</span>
+            </div>
+            <h2>Image Detection</h2>
+            <p>Upload any photo and the AI will find and identify every object in it. Get instant, annotated results with confidence scores.</p>
+            <div class="card-tags"><span class="tag">Bounding boxes</span><span class="tag">Confidence scores</span><span class="tag">Class filters</span></div>
+            <a href="/image" class="card-btn btn-image">🔍 &nbsp;Open Image Detection →</a>
+        </div>
+
+        <!-- VIDEO SECTION -->
+        <div class="section-card card-video">
+            <div class="card-top">
+                <span class="card-icon-wrap">🎬</span>
+                <span class="card-status status-ready"><span class="status-dot"></span> Ready</span>
+            </div>
+            <h2>Video Detection</h2>
+            <p>Upload a video clip and the AI will detect and identify objects across every frame. Get a full annotated video with detection summary.</p>
+            <div class="card-tags"><span class="tag">Frame-by-frame</span><span class="tag">Summary report</span><span class="tag">Class filters</span></div>
+            <a href="/video" class="card-btn btn-video">🎥 &nbsp;Open Video Detection →</a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<div class="section" id="how-it-works" style="padding-top:8px">
+    <div class="kicker">Under the hood</div>
+    <h2 class="section-title">How the pipeline works</h2>
+    <p class="section-sub">A hybrid detection-then-classification approach keeps results fast and precise.</p>
+
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">01</div>
+            <h3>YOLOv8 detects</h3>
+            <p>Every frame is scanned for candidate objects — people, vehicles, animals and furniture — with bounding boxes and initial confidence.</p>
+            <span class="step-arrow">→</span>
+        </div>
+        <div class="step">
+            <div class="step-num">02</div>
+            <h3>EfficientNet‑B0 refines</h3>
+            <p>Low-confidence or person-class crops are routed to a dedicated classifier for a sharper, more reliable label.</p>
+            <span class="step-arrow">→</span>
+        </div>
+        <div class="step">
+            <div class="step-num">03</div>
+            <h3>Results, annotated</h3>
+            <p>You get a labeled image or video back, plus a clean summary of what was found and how confident the model is.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ TECH STRIP ═══════════════ -->
+<div class="tech-strip" id="stack">
+    <div class="tech-inner">
+        <span class="tech-label">Built with</span>
+        <span class="tech-pill"><i></i> YOLOv8</span>
+        <span class="tech-pill"><i></i> EfficientNet‑B0</span>
+        <span class="tech-pill"><i></i> PyTorch</span>
+        <span class="tech-pill"><i></i> OpenCV</span>
+        <span class="tech-pill"><i></i> Flask</span>
+    </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+    <div class="footer-inner">
+        <div>
+            <div class="footer-brand">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="white" stroke-width="2"/><circle cx="17" cy="17" r="4" stroke="white" stroke-width="2"/></svg>
+                </span>
+                HybridVision
+            </div>
+            <p class="footer-desc">A hybrid YOLOv8 + EfficientNet‑B0 pipeline for detecting and classifying multiple objects in images and videos.</p>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/image">Image Detection</a>
+                <a href="/video">Video Detection</a>
+            </div>
+            <div class="footer-col">
+                <h4>Pipeline</h4>
+                <a href="#how-it-works">How it works</a>
+                <a href="#stack">Tech stack</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">© <span id="year"></span> HybridVision · Multi-Object Detection &amp; Classification</div>
+</footer>
+
+<script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ── Ambient header animation ── */
+    const header = document.getElementById('header-root');
+    const orbs = [
+        {size:260,top:'0%', left:'58%',color:'#366ED8',delay:'0s',  dur:'11s'},
+        {size:160,top:'50%',left:'6%', color:'#F6490D',delay:'2s',  dur:'9s' },
+        {size:110,top:'8%', left:'84%',color:'#064ACB',delay:'1s',  dur:'13s'},
+        {size:80, top:'68%',left:'74%',color:'#7c3aed',delay:'3.5s',dur:'8s' },
+        {size:55, top:'40%',left:'40%',color:'#366ED8',delay:'1.8s',dur:'10s'},
+    ];
+    orbs.forEach(b => {
+        const el = document.createElement('div'); el.className = 'bubble';
+        el.style.cssText = `width:${b.size}px;height:${b.size}px;top:${b.top};left:${b.left};background:radial-gradient(circle at 35% 35%,${b.color}55,transparent 70%);opacity:.14;animation:floatOrb ${b.dur} ease-in-out infinite;animation-delay:${b.delay};`;
+        header.appendChild(el);
+    });
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `@keyframes floatOrb{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18px,-22px) scale(1.07)}66%{transform:translate(-12px,10px) scale(.95)}}`;
+    document.head.appendChild(styleTag);
+    for (let i=0;i<18;i++) {
+        const sp=document.createElement('div'); sp.className='spark';
+        sp.style.cssText=`left:${Math.random()*100}%;bottom:0;width:${2+Math.random()*3}px;height:${2+Math.random()*3}px;animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*8}s;opacity:0;`;
+        header.appendChild(sp);
+    }
+</script>
+</body>
+</html>

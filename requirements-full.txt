@@ -1,0 +1,15 @@
+# Extra dependencies for the DeepFace age/gender fallback on large,
+# well-lit person crops (utils.py: DEEPFACE_AVAILABLE). Optional --
+# the app runs fine without these, it just skips that one fallback
+# path and relies on YOLO + EfficientNet-B0 instead.
+#
+# Install alongside requirements.txt only on a host with enough
+# build memory & disk (tensorflow alone is 500MB-1GB+):
+#   pip install -r requirements.txt -r requirements-full.txt
+
+-r requirements.txt
+deepface==0.0.93
+tensorflow-cpu==2.16.1
+tf-keras==2.16.0
+mtcnn==0.1.1
+retina-face==0.0.17

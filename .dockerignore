@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.env
+venv/
+node_modules/
+static/uploads/*
+!static/uploads/.gitkeep
+test images/
+*.md
+.DS_Store

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Object Detection — Multi-Object AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #064ACB;
+            --blue:   #366ED8;
+            --orange: #F6490D;
+            --purple: #7c3aed;
+            --purp2:  #a855f7;
+            --light:  #F2F3F3;
+            --white:  #ffffff;
+            --text:   #0f172a;
+            --muted:  #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: var(--white); color: var(--text); min-height: 100vh; }
+
+        /* ════ HEADER ════ */
+        .header {
+            position: relative;
+            background: linear-gradient(135deg, #1a0454 0%, #4a0d8f 50%, #7c3aed 100%);
+            padding: 56px 24px 60px; text-align: center; overflow: hidden;
+        }
+        .header-mesh {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 80% at 15% 50%, rgba(246,73,13,0.10) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 70% at 85% 30%, rgba(168,85,247,0.25) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 60% at 60% 90%, rgba(124,58,237,0.20) 0%, transparent 50%);
+            animation: meshShift 10s ease-in-out infinite alternate;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes meshShift { 0%{opacity:.7;transform:scale(1) rotate(0deg)} 100%{opacity:1;transform:scale(1.05) rotate(1deg)} }
+        .dot-grid {
+            position:absolute; inset:0;
+            background-image: radial-gradient(circle,rgba(255,255,255,0.09) 1px,transparent 1px);
+            background-size:26px 26px; pointer-events:none; z-index:0;
+            animation:dotDrift 20s linear infinite;
+        }
+        @keyframes dotDrift { from{background-position:0 0} to{background-position:26px 26px} }
+        .bubble{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(1px)}
+        .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;pointer-events:none;z-index:1;animation:sparkFloat linear infinite;opacity:0}
+        @keyframes sparkFloat{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:.9}85%{opacity:.6}100%{transform:translateY(-120px) scale(0.3);opacity:0}}
+        .ring{position:absolute;border-radius:50%;border:1.5px solid rgba(255,255,255,0.07);pointer-events:none;z-index:0;animation:ringExpand 6s ease-out infinite;transform:translate(-50%,-50%)}
+        @keyframes ringExpand{0%{width:60px;height:60px;opacity:.5}100%{width:700px;height:700px;opacity:0}}
+        .header-content{position:relative;z-index:2}
+
+        .nav-back{position:absolute;top:20px;left:24px;z-index:10;display:inline-flex;align-items:center;gap:6px;color:#d4bbff;font-size:13px;font-weight:800;text-decoration:none;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:7px 16px;border-radius:999px;backdrop-filter:blur(4px);transition:background .2s,color .2s}
+        .nav-back:hover{background:rgba(255,255,255,0.16);color:#fff}
+
+        .project-label{display:inline-flex;align-items:center;gap:7px;background:rgba(168,85,247,0.20);color:#e0bbff;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 18px;border-radius:999px;border:1px solid rgba(168,85,247,0.40);margin-bottom:20px;animation:fadeSlideDown .6s ease both;backdrop-filter:blur(4px)}
+        .label-dot{width:7px;height:7px;background:var(--purp2);border-radius:50%;animation:dotPulse 1.4s ease-in-out infinite;flex-shrink:0}
+        @keyframes dotPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(168,85,247,.6)}50%{transform:scale(1.3);box-shadow:0 0 0 5px rgba(168,85,247,0)}}
+        .header h1{font-size:clamp(22px,3.2vw,38px);font-weight:900;color:#fff;line-height:1.2;margin-bottom:10px;text-shadow:0 4px 22px rgba(0,0,0,0.3);animation:fadeSlideDown .6s .1s ease both}
+        .header h1 em{font-style:normal;background:linear-gradient(90deg,#c084fc,#e879f9,#c084fc);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+        @keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+        .header .app-name{font-size:15px;color:#d4bbff;font-weight:700;margin-bottom:14px;letter-spacing:.06em;animation:fadeSlideDown .6s .25s ease both}
+        .header p{font-size:15px;color:#e0d0ff;max-width:500px;margin:0 auto;line-height:1.7;font-weight:600;animation:fadeSlideDown .6s .35s ease both}
+        .header-underline{display:inline-block;width:60px;height:4px;background:linear-gradient(90deg,var(--purp2),#e879f9);border-radius:999px;margin:16px auto 0;animation:underlineGrow .7s .5s ease both}
+        @keyframes underlineGrow{from{width:0;opacity:0}to{width:60px;opacity:1}}
+        @keyframes fadeSlideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ════ PAGE ════ */
+        .page{max-width:1160px;margin:0 auto;padding:32px 24px 110px}
+
+        .section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+        .section-label::after{content:'';flex:1;height:1.5px;background:var(--light);border-radius:999px}
+
+        /* ════ CARDS ════ */
+        .steps-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px;align-items:stretch}
+        .card{background:var(--white);border:1.5px solid #e2e8f0;border-radius:18px;padding:26px 24px;box-shadow:0 1px 2px rgba(6,74,203,0.05),0 4px 10px rgba(6,74,203,0.07),0 10px 20px rgba(6,74,203,0.05),0 3px 0 #d5dff5,inset 0 1px 0 rgba(255,255,255,0.9);transition:box-shadow .25s,transform .2s;display:flex;flex-direction:column}
+        .card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(6,74,203,0.08),0 8px 20px rgba(6,74,203,0.12),0 20px 36px rgba(6,74,203,0.07),0 4px 0 #b8cbf0,inset 0 1px 0 rgba(255,255,255,0.9)}
+        .step-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:4px 12px;border-radius:999px;margin-bottom:10px;align-self:flex-start}
+        .tag-purple{background:#f5f3ff;color:#5b21b6;border:1.5px solid #c4b5fd}
+        .tag-green{background:#edf6f0;color:#166534;border:1.5px solid #b7dfc4}
+        .tag-orange{background:#fff1ec;color:#c93b00;border:1.5px solid #fdc4b0}
+        .tag-blue{background:#eef3fd;color:var(--navy);border:1.5px solid #bed0f7}
+        .card h2{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px}
+        .card-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px}
+        .card-body{flex:1;display:flex;flex-direction:column}
+
+        /* ════ UPLOAD ════ */
+        .upload-zone{border:2.5px dashed #c4b5fd;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s,background .2s;background:var(--light);flex:1}
+        .upload-zone:hover,.upload-zone.drag-over{border-color:var(--purple);background:#f5f0ff}
+        .upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+        .up-icon{font-size:36px;margin-bottom:10px}
+        .upload-zone h3{font-size:14px;font-weight:700;color:#334155;margin-bottom:5px}
+        .upload-zone p{font-size:12px;color:#94a3b8;margin-bottom:12px}
+        .browse-btn{display:inline-block;background:var(--purple);color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;padding:9px 22px;border-radius:9px;pointer-events:none;box-shadow:0 3px 0 #5b21b6}
+        .upload-formats{font-size:11px;color:#c4c9d2;margin-top:9px}
+        #file-chosen{margin-top:9px;font-size:12px;font-weight:700;color:var(--purple)}
+        .prev-notice{background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:9px;padding:8px 14px;font-size:12px;color:#5b21b6;font-weight:700;margin-top:12px}
+
+        /* ════ ERROR BANNER ════ */
+        .error-banner{background:#fff1ec;border:1.5px solid #fdc4b0;border-radius:10px;padding:12px 18px;font-size:13px;font-weight:700;color:#c93b00;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+        /* ════ SUPERCLASS TOGGLES ════ */
+        .sc-grid{display:flex;flex-direction:column;gap:8px;flex:1}
+        .sc-toggle{display:none}
+        .sc-label{display:flex;align-items:center;gap:10px;border:2px solid #e2e8f0;border-radius:11px;padding:9px 13px;cursor:pointer;background:var(--light);transition:border-color .18s,background .18s,box-shadow .18s;user-select:none}
+        .sc-label:hover{border-color:var(--purple);background:#f5f0ff}
+        .sc-toggle:checked + .sc-label{border-color:var(--purple);background:#f5f0ff;box-shadow:0 2px 10px rgba(124,58,237,0.14)}
+        .sc-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+        .sc-info{flex:1}
+        .sc-name{font-size:13px;font-weight:800;color:var(--text);margin-bottom:1px}
+        .sc-classes{font-size:10.5px;color:var(--muted);line-height:1.4}
+        .sc-check{width:18px;height:18px;border-radius:5px;border:2px solid #c4b5fd;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+        .sc-toggle:checked + .sc-label .sc-check{background:var(--purple);border-color:var(--purple)}
+        .sc-check::after{content:'';width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:none}
+        .sc-toggle:checked + .sc-label .sc-check::after{display:block}
+        .sc-actions{display:flex;gap:6px;margin-bottom:10px}
+        .sc-act-btn{font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:4px 12px;border-radius:7px;border:1.5px solid #c4b5fd;background:#f5f3ff;color:var(--purple);cursor:pointer;transition:background .15s}
+
+        /* ════ RUN CARD ════ */
+        .run-card-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;background:linear-gradient(145deg,#f5f0ff,#ede8ff);border-radius:12px;padding:30px 20px;border:1.5px dashed #c4b5fd}
+        .run-icon{font-size:52px;animation:pulse 2.5s ease-in-out infinite}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+        .btn-run{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,var(--purple),var(--purp2));color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;padding:16px;border:none;border-radius:12px;cursor:pointer;transition:opacity .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 0 #5b21b6,0 6px 20px rgba(124,58,237,0.30);letter-spacing:.02em}
+        .btn-run:hover{opacity:.92;transform:translateY(-2px);box-shadow:0 6px 0 #5b21b6,0 12px 28px rgba(124,58,237,0.35)}
+        .btn-run:active{transform:translateY(2px);box-shadow:0 2px 0 #5b21b6}
+        .submit-note{text-align:center;font-size:12px;color:var(--muted);font-weight:600}
+        .processing-note{background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:9px;padding:10px 14px;font-size:12px;color:#7e22ce;font-weight:700;text-align:center;line-height:1.6}
+
+        /* ════ RESULTS ════ */
+        .results-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+        .empty-state{grid-column:1/-1;background:var(--light);border:2px dashed #d5dde8;border-radius:18px;padding:56px 24px;text-align:center;color:#94a3b8;box-shadow:0 3px 0 #d5dff5,0 4px 10px rgba(6,74,203,0.05)}
+        .empty-state .e-icon{font-size:52px;margin-bottom:14px}
+        .empty-state h3{font-size:16px;font-weight:800;color:#c0cfe8;margin-bottom:6px}
+        .empty-state p{font-size:13px;line-height:1.6}
+
+        /* ════ VIDEO PLAYER ════ */
+        .video-wrap{margin-top:14px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(124,58,237,0.18)}
+        .video-wrap video{width:100%;display:block;max-height:420px;object-fit:contain}
+        .video-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .vmeta-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;background:#f5f3ff;color:#5b21b6;border:1.5px solid #c4b5fd}
+        .result-note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.9;background:#f8faff;border-radius:10px;padding:10px 14px;border:1px solid #e2e8f0}
+        .download-btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--purple),var(--purp2));color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:10px 22px;border-radius:10px;text-decoration:none;margin-top:14px;box-shadow:0 3px 0 #5b21b6;transition:opacity .2s,transform .15s}
+        .download-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+        /* ════ DETECTION SUMMARY ════ */
+        .det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:14px}
+        .det-card{
+            background:var(--light);border:1.5px solid #e2e8f0;border-radius:13px;padding:12px 10px;
+            text-align:center;transition:box-shadow .2s,transform .2s;
+            box-shadow:0 2px 0 #d5dff5,0 3px 8px rgba(124,58,237,0.06);
+            position:relative;
+        }
+        .det-card:hover{box-shadow:0 4px 0 #c4b5fd,0 8px 18px rgba(124,58,237,0.12);transform:translateY(-3px)}
+        .det-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font-size:12px;font-weight:900;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+        .det-name{font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;text-transform:capitalize}
+        .det-frames{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px}
+        .conf-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:5px}
+        .conf-high{background:#edf6f0;color:#166534;border:1px solid #b7dfc4}
+        .conf-mid {background:#eef3fd;color:var(--navy);border:1px solid #bed0f7}
+        .conf-low {background:#fff1ec;color:#c93b00;border:1px solid #fdc4b0}
+        .model-badge{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-top:5px}
+        .mb-yolo   {background:#eff6ff;color:#1d4ed8;border:1.5px solid #93c5fd}
+        .mb-effnet {background:#faf5ff;color:#6d28d9;border:1.5px solid #c4b5fd}
+
+        /* ════ LABEL TALLY ════ */
+        .label-tally{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;margin-bottom:4px}
+        .lt-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;
+            padding:4px 12px;border-radius:999px;background:#f5f3ff;color:#5b21b6;
+            border:1.5px solid #c4b5fd;text-transform:capitalize}
+
+        /* ════ GROUP HEADERS ════ */
+        .group-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 16px; border-radius: 12px;
+            margin: 16px 0 10px; font-weight: 900;
+        }
+        .gh-mt { margin-top: 28px; }
+        .gh-effnet {
+            background: linear-gradient(135deg, #f5f0ff, #ede8ff);
+            border: 1.5px solid #c4b5fd;
+        }
+        .gh-yolo {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1.5px solid #93c5fd;
+        }
+        .gh-icon  { font-size: 20px; }
+        .gh-title { font-size: 14px; font-weight: 900; flex: 1; }
+        .gh-effnet .gh-title { color: #5b21b6; }
+        .gh-yolo   .gh-title { color: #1d4ed8; }
+        .gh-count  {
+            font-size: 11px; font-weight: 800; padding: 3px 10px;
+            border-radius: 999px;
+        }
+        .gh-effnet .gh-count { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+        .gh-yolo   .gh-count { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+        /* YOLO raw sub-line on EfficientNet cards */
+        .yolo-sub {
+            font-size: 9px; font-weight: 700; color: #94a3b8;
+            margin-top: 5px; letter-spacing: .02em;
+        }
+
+        /* EfficientNet attempt row on YOLO fallback cards */
+        .effnet-attempt {
+            display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 6px; padding: 5px 8px;
+            background: #faf5ff; border: 1px dashed #c4b5fd; border-radius: 8px;
+            font-size: 9px; font-weight: 800;
+        }
+        .ea-label  { color: #7c3aed; }
+        .ea-result { color: #5b21b6; }
+        .ea-rejected {
+            color: #dc2626; background: #fef2f2;
+            border: 1px solid #fca5a5; border-radius: 999px;
+            padding: 1px 6px; font-size: 8px;
+        }
+
+        /* Hover tooltip */
+        .route-tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:700;padding:8px 12px;border-radius:9px;white-space:normal;z-index:200;pointer-events:none;width:220px;line-height:1.6;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,0.35);}
+        .route-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1e293b}
+        .det-card:hover .route-tooltip{display:block}
+        .tt-row{margin-bottom:3px}
+        .tt-label{color:#94a3b8;font-size:9px}
+        .tt-val{color:#fff;font-weight:900}
+
+        /* Stats bar */
+        .stats-bar{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+        .stat-box{background:var(--light);border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 20px;flex:1;min-width:120px;text-align:center;box-shadow:0 2px 0 #d5dff5}
+        .stat-num{font-size:24px;font-weight:900;color:var(--purple);display:block}
+        .stat-lbl{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+        /* ════ BACK TO TOP ════ */
+        .back-to-top{position:fixed;bottom:28px;right:28px;background:linear-gradient(135deg,var(--purple),var(--purp2));color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:12px 20px;border:none;border-radius:999px;cursor:pointer;box-shadow:0 3px 0 #5b21b6,0 6px 20px rgba(124,58,237,0.30);display:flex;align-items:center;gap:6px;opacity:0;pointer-events:none;transition:opacity .25s,transform .15s;z-index:999}
+        .back-to-top.visible{opacity:1;pointer-events:all}
+        .back-to-top:hover{transform:translateY(-2px)}
+
+        footer{text-align:center;font-size:12px;color:#94a3b8;margin-top:40px;font-weight:600}
+
+        @media(max-width:700px){.steps-row{grid-template-columns:1fr}.results-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body id="top">
+
+<!-- ════ HEADER ════ -->
+<div class="header" id="header-root">
+    <div class="header-mesh"></div>
+    <div class="dot-grid"></div>
+    <a href="/" class="nav-back">← Back to Home</a>
+    <div class="header-content">
+        <div class="project-label"><span class="label-dot"></span> MCA Final Year Project &nbsp;·&nbsp; AI Vision System</div>
+        <h1>
+            <em>Detecting and Classifying</em><br>
+            Multiple Objects in Videos
+        </h1>
+        <div class="app-name">— What's in My Video? —</div>
+        <p>Upload any video clip and the AI will find and label every object in every frame.</p>
+        <div class="header-underline"></div>
+    </div>
+</div>
+
+<div class="page">
+
+    {% if error_msg %}
+    <div class="error-banner">⚠️ {{ error_msg }}</div>
+    {% endif %}
+
+    <!-- ════ FORM ════ -->
+    <form method="POST" enctype="multipart/form-data" id="main-form">
+
+        <div class="section-label">Complete the steps below to detect objects in your video</div>
+
+        <div class="steps-row">
+
+            <!-- Step 1 — Upload -->
+            <div class="card">
+                <div class="step-tag tag-purple">🎬 Step 1</div>
+                <h2>Upload Your Video</h2>
+                <p class="card-desc">Choose a video from your device. The AI will scan every frame and identify all objects inside it.</p>
+                <div class="card-body">
+                    <div class="upload-zone" id="drop-zone">
+                        <input type="file" name="video" id="file-input" accept="video/*">
+                        <div class="up-icon">🎥</div>
+                        <h3>Tap here to choose a video</h3>
+                        <p>or drag and drop a video here</p>
+                        <div class="browse-btn">📂 &nbsp;Browse Videos</div>
+                        <div class="upload-formats">Supports MP4, AVI, MOV, MKV and most video formats</div>
+                        <div id="file-chosen"></div>
+                    </div>
+                    {% if video_path %}
+                        <div class="prev-notice">✅ Previous video loaded. Upload a new one to replace it.</div>
+                        <input type="hidden" name="video_path" value="{{ video_path }}">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 2 — Superclass filter -->
+            <div class="card">
+                <div class="step-tag tag-purple" style="background:#f5f3ff;color:#5b21b6;border:1.5px solid #c4b5fd">🎯 Step 2</div>
+                <h2>Select What to Detect</h2>
+                <p class="card-desc">Choose which categories the AI should look for across every frame. Unselected categories are completely excluded from prediction.</p>
+                <div class="card-body">
+                    <div class="sc-actions">
+                        <button type="button" class="sc-act-btn" onclick="setAllSC(true)">✅ Select All</button>
+                        <button type="button" class="sc-act-btn" onclick="setAllSC(false)">☐ Deselect All</button>
+                    </div>
+                    <div class="sc-grid">
+                        {% set sc_meta = [
+                            ("Animal",    "🐾", "bear, elephant"),
+                            ("Vehicle",   "🚗", "bicycle, bus, motorcycle, train, pickup_truck"),
+                            ("Object",    "🍶", "bottle"),
+                            ("Furniture", "🛋️", "bed, chair, couch, table"),
+                            ("Person",    "👤", "man, woman, boy, girl, baby"),
+                        ] %}
+                        {% for sc_name, sc_icon, sc_classes in sc_meta %}
+                        <div>
+                            <input class="sc-toggle" type="checkbox" name="superclass"
+                                   id="sc-{{ sc_name }}" value="{{ sc_name }}"
+                                   {% if sc_name in selected_superclasses %}checked{% endif %}>
+                            <label class="sc-label" for="sc-{{ sc_name }}">
+                                <span class="sc-icon">{{ sc_icon }}</span>
+                                <span class="sc-info">
+                                    <div class="sc-name">{{ sc_name }}</div>
+                                    <div class="sc-classes">{{ sc_classes }}</div>
+                                </span>
+                                <span class="sc-check"></span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 — Run -->
+            <div class="card">
+                <div class="step-tag tag-green">🚀 Step 3</div>
+                <h2>Analyse Video</h2>
+                <p class="card-desc">Click below to run the full detection pipeline across every frame. Processing time depends on video length.</p>
+                <div class="card-body">
+                    <div class="run-card-body">
+                        <div class="run-icon">🤖</div>
+                        <div style="text-align:center">
+                            <div style="font-size:14px;font-weight:700;color:var(--purple);margin-bottom:4px">Ready to go</div>
+                            <div style="font-size:12px;color:#64748b;margin-bottom:12px">YOLOv8 + EfficientNet-B0 pipeline</div>
+                        </div>
+                        <button type="submit" class="btn-run" id="run-btn">🔍 &nbsp;Analyse My Video</button>
+                        <div class="submit-note">⏱️ Processing time scales with video length</div>
+                    </div>
+                    <div class="processing-note" style="margin-top:14px">
+                        ⚠️ Do not close this tab while processing. Longer videos may take a few minutes.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- ════ RESULTS ════ -->
+    <div id="results-section">
+        {% if result or summary %}
+        <div class="section-label">Video detection results</div>
+        {% endif %}
+
+        <div class="results-row">
+
+        {% if result %}
+
+            <!-- Result video player -->
+            <div class="card">
+                <div class="step-tag tag-green">✅ Annotated Video</div>
+                <h2>Objects Detected in Your Video</h2>
+                <p class="card-desc">
+                    Every frame has been scanned. Bounding boxes and labels are drawn directly on the video below.
+                    <strong>Thick border</strong> = EfficientNet-B0 analysis.
+                    <strong>Thin border</strong> = YOLO direct detection.
+                </p>
+
+                {% if video_info %}
+                <div class="stats-bar">
+                    <div class="stat-box">
+                        <span class="stat-num">{{ video_info.unique_tracks }}</span>
+                        <span class="stat-lbl">Unique Tracks</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num">{{ video_info.total_frames }}</span>
+                        <span class="stat-lbl">Frames Processed</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num">{{ video_info.duration_sec }}s</span>
+                        <span class="stat-lbl">Duration</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num">{{ video_info.fps }}</span>
+                        <span class="stat-lbl">FPS</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="video-wrap">
+                    <video controls playsinline>
+                        <source src="{{ url_for('static', filename=result) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+                <div class="video-meta">
+                    {% if video_info %}
+                    <span class="vmeta-pill">📐 {{ video_info.width }}×{{ video_info.height }}</span>
+                    <span class="vmeta-pill">🎞️ {{ video_info.fps }} fps</span>
+                    <span class="vmeta-pill">⏱️ {{ video_info.duration_sec }}s</span>
+                    {% endif %}
+                </div>
+
+                <div class="result-note">
+                    <strong>How to read the annotated video:</strong><br>
+                    <span style="color:#5b21b6">〰️ Fading trail</span> → motion path of each tracked object<br>
+                    <strong>T{id}</strong> badge → persistent Track ID — same object across all frames<br>
+                    <strong>Thick border</strong> = EfficientNet-B0 analysis &nbsp;|&nbsp; <strong>Thin border</strong> = YOLO direct<br>
+                    <small style="color:#64748b">People are sub-classified as man / woman / boy / girl / baby by EfficientNet-B0</small>
+                </div>
+
+                <a href="{{ url_for('static', filename=result) }}" download="annotated_video.mp4" class="download-btn">
+                    ⬇️ &nbsp;Download Annotated Video
+                </a>
+            </div>
+
+            {% if summary %}
+            <!-- Detection summary cards — categorised -->
+            <div class="card">
+                <div class="step-tag tag-orange">🗂️ Tracking Summary</div>
+                <h2>{{ summary|length }} Unique Object{% if summary|length != 1 %}s{% endif %} Tracked</h2>
+
+                {# ── Label tally ── #}
+                <div class="label-tally">
+                {% for label, items in summary|groupby('class') %}
+                    <span class="lt-pill">{{ items|list|length }} {{ label }}</span>
+                {% endfor %}
+                </div>
+
+                <p class="card-desc">
+                    Each card is one real-world object tracked across the video.
+                    The label is the majority-vote class across all frames.
+                    EfficientNet-B0 results are shown first, followed by YOLOv8 detections.
+                </p>
+
+                {# ════ EFFICIENTNET GROUP ════ #}
+                {% set effnet_sum = summary | selectattr('model', 'equalto', 'EfficientNet-B0') | list %}
+                {% if effnet_sum %}
+                <div class="group-header gh-effnet">
+                    <span class="gh-icon">🧠</span>
+                    <span class="gh-title">EfficientNet-B0 Results</span>
+                    <span class="gh-count">{{ effnet_sum|length }} object{% if effnet_sum|length != 1 %}s{% endif %}</span>
+                </div>
+                <div class="det-grid">
+                {% for d in effnet_sum %}
+                    <div class="det-card" id="vcard-{{ d.index }}"
+                         style="border-color:{{ d.color }};border-width:3px;">
+                        <div class="route-tooltip">
+                            <div class="tt-row"><span class="tt-label">Track ID: </span><span class="tt-val">#{{ d.track_id }}</span></div>
+                            <div class="tt-row"><span class="tt-label">Model: </span><span class="tt-val">EfficientNet-B0</span></div>
+                            <div class="tt-row"><span class="tt-label">YOLO raw: </span><span class="tt-val">{{ d.yolo_label }} · {{ d.yolo_conf }}%</span></div>
+                            <div class="tt-row"><span class="tt-label">Final: </span><span class="tt-val">{{ d.class }} ({{ d.best_conf }}%)</span></div>
+                            <div class="tt-row"><span class="tt-label">Frames: </span><span class="tt-val">{{ d.frames_seen }} · avg {{ d.avg_conf }}%</span></div>
+                        </div>
+                        <div class="det-badge" style="background:{{ d.color }}">{{ d.index }}</div>
+                        <div style="margin-bottom:5px">
+                            <span style="display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#f5f3ff;color:#5b21b6;border:1px solid #c4b5fd;">
+                                Track #{{ d.track_id }}
+                            </span>
+                        </div>
+                        <div class="det-name">{{ d.class }}</div>
+                        <div class="det-frames">{{ d.frames_seen }} frame{% if d.frames_seen != 1 %}s{% endif %}</div>
+                        {% if d.best_conf >= 75 %}
+                            <span class="conf-pill conf-high">✅ {{ d.best_conf }}%</span>
+                        {% elif d.best_conf >= 45 %}
+                            <span class="conf-pill conf-mid">🤔 {{ d.best_conf }}%</span>
+                        {% else %}
+                            <span class="conf-pill conf-low">❓ {{ d.best_conf }}%</span>
+                        {% endif %}
+                        <div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:3px">avg {{ d.avg_conf }}%</div>
+                        <div><span class="model-badge mb-effnet">🧠 EfficientNet-B0</span></div>
+                        <div class="yolo-sub">YOLO raw: {{ d.yolo_label }} · {{ d.yolo_conf }}%</div>
+                    </div>
+                {% endfor %}
+                </div>
+                {% endif %}
+
+                {# ════ YOLO GROUP ════ #}
+                {% set yolo_sum = summary | rejectattr('model', 'equalto', 'EfficientNet-B0') | list %}
+                {% if yolo_sum %}
+                <div class="group-header gh-yolo {% if effnet_sum %}gh-mt{% endif %}">
+                    <span class="gh-icon">⚡</span>
+                    <span class="gh-title">YOLOv8 Results</span>
+                    <span class="gh-count">{{ yolo_sum|length }} object{% if yolo_sum|length != 1 %}s{% endif %}</span>
+                </div>
+                <div class="det-grid">
+                {% for d in yolo_sum %}
+                    <div class="det-card" id="vcard-{{ d.index }}"
+                         style="border-color:{{ d.color }};border-width:2px;">
+                        <div class="route-tooltip">
+                            <div class="tt-row"><span class="tt-label">Track ID: </span><span class="tt-val">#{{ d.track_id }}</span></div>
+                            <div class="tt-row"><span class="tt-label">Model: </span><span class="tt-val">YOLOv8</span></div>
+                            <div class="tt-row"><span class="tt-label">YOLO label: </span><span class="tt-val">{{ d.yolo_label }} · {{ d.yolo_conf }}%</span></div>
+                            {% if d.effnet_attempt_label %}
+                            <div class="tt-row"><span class="tt-label">EffNet tried: </span><span class="tt-val">{{ d.effnet_attempt_label }} ({{ d.effnet_attempt_conf }}%) ✗</span></div>
+                            {% endif %}
+                            <div class="tt-row"><span class="tt-label">Final: </span><span class="tt-val">{{ d.class }} ({{ d.best_conf }}%)</span></div>
+                            <div class="tt-row"><span class="tt-label">Frames: </span><span class="tt-val">{{ d.frames_seen }} · avg {{ d.avg_conf }}%</span></div>
+                        </div>
+                        <div class="det-badge" style="background:{{ d.color }}">{{ d.index }}</div>
+                        <div style="margin-bottom:5px">
+                            <span style="display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;">
+                                Track #{{ d.track_id }}
+                            </span>
+                        </div>
+                        <div class="det-name">{{ d.class }}</div>
+                        <div class="det-frames">{{ d.frames_seen }} frame{% if d.frames_seen != 1 %}s{% endif %}</div>
+                        {% if d.best_conf >= 75 %}
+                            <span class="conf-pill conf-high">✅ {{ d.best_conf }}%</span>
+                        {% elif d.best_conf >= 45 %}
+                            <span class="conf-pill conf-mid">🤔 {{ d.best_conf }}%</span>
+                        {% else %}
+                            <span class="conf-pill conf-low">❓ {{ d.best_conf }}%</span>
+                        {% endif %}
+                        <div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:3px">avg {{ d.avg_conf }}%</div>
+                        <div><span class="model-badge mb-yolo">⚡ YOLOv8</span></div>
+                        {# Show EfficientNet's rejected attempt if it ran #}
+                        {% if d.effnet_attempt_label %}
+                        <div class="effnet-attempt">
+                            <span class="ea-label">🧠 EffNet tried:</span>
+                            <span class="ea-result">{{ d.effnet_attempt_label }} · {{ d.effnet_attempt_conf }}%</span>
+                            <span class="ea-rejected">✗ rejected</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+                {% endif %}
+
+            </div>
+            {% endif %}
+
+        {% else %}
+
+            <div class="empty-state">
+                <div class="e-icon">🎬</div>
+                <h3>Your results will appear here</h3>
+                <p>Complete the steps above and click <strong>"Analyse My Video"</strong> to run the pipeline.</p>
+            </div>
+
+        {% endif %}
+
+        </div>
+    </div>
+
+    <footer>
+        Detecting and Classifying Multiple Objects in Images and Videos &nbsp;·&nbsp; MCA Final Year Project
+    </footer>
+
+</div>
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ &nbsp;Back to Top</button>
+
+<script>
+    /* Drag & drop */
+    const dz = document.getElementById('drop-zone');
+    ['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(e => dz.addEventListener(e, () => dz.classList.remove('drag-over')));
+
+    /* Show filename */
+    document.getElementById('file-input').addEventListener('change', function() {
+        document.getElementById('file-chosen').textContent = this.files[0] ? '✅ ' + this.files[0].name : '';
+    });
+
+    function setAllSC(checked) {
+        document.querySelectorAll('.sc-toggle').forEach(cb => cb.checked = checked);
+    }
+
+    /* Processing overlay — disable button and show spinner while waiting */
+    document.getElementById('main-form').addEventListener('submit', function() {
+        const btn = document.getElementById('run-btn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ &nbsp;Processing… please wait';
+        btn.style.opacity = '0.7';
+        sessionStorage.setItem('scrollToResults', '1');
+    });
+
+    /* Scroll to results after page reload */
+    window.addEventListener('load', () => {
+        if (sessionStorage.getItem('scrollToResults') === '1') {
+            sessionStorage.removeItem('scrollToResults');
+            const el = document.getElementById('results-section');
+            if (el) setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
+        }
+    });
+
+    /* Back to top */
+    const btn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 200));
+
+    /* ── Animated header ── */
+    const header = document.getElementById('header-root');
+    const orbs = [
+        {size:260,top:'0%', left:'58%',color:'#7c3aed',delay:'0s',  dur:'11s'},
+        {size:160,top:'50%',left:'8%', color:'#a855f7',delay:'2s',  dur:'9s' },
+        {size:110,top:'10%',left:'82%',color:'#4a0d8f',delay:'1s',  dur:'13s'},
+        {size:80, top:'65%',left:'72%',color:'#e879f9',delay:'3.5s',dur:'8s' },
+        {size:55, top:'40%',left:'42%',color:'#7c3aed',delay:'1.8s',dur:'10s'},
+    ];
+    orbs.forEach(b => {
+        const el = document.createElement('div'); el.className = 'bubble';
+        el.style.cssText = `width:${b.size}px;height:${b.size}px;top:${b.top};left:${b.left};background:radial-gradient(circle at 35% 35%,${b.color}55,transparent 70%);opacity:.12;animation:floatOrb ${b.dur} ease-in-out infinite;animation-delay:${b.delay};`;
+        header.appendChild(el);
+    });
+    const s = document.createElement('style');
+    s.textContent = `@keyframes floatOrb{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18px,-22px) scale(1.07)}66%{transform:translate(-12px,10px) scale(0.95)}}`;
+    document.head.appendChild(s);
+    for (let i=0;i<3;i++) {
+        const r=document.createElement('div'); r.className='ring';
+        r.style.cssText=`top:50%;left:50%;animation-delay:${i*2}s;`;
+        header.appendChild(r);
+    }
+    for (let i=0;i<18;i++) {
+        const sp=document.createElement('div'); sp.className='spark';
+        sp.style.cssText=`left:${Math.random()*100}%;bottom:0;width:${2+Math.random()*3}px;height:${2+Math.random()*3}px;animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*8}s;opacity:0;`;
+        header.appendChild(sp);
+    }
+</script>
+</body>
+</html>

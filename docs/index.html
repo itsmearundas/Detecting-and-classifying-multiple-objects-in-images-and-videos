@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Vision AI — Live Demo</title>
+<meta name="description" content="Try the flow of a hybrid YOLOv8 + EfficientNet-B0 detection pipeline in demo mode, then download the full project to run it yourself.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23064ACB'/%3E%3Crect x='24' y='24' width='34' height='34' rx='6' fill='none' stroke='%23F6490D' stroke-width='6'/%3E%3Ccircle cx='70' cy='70' r='14' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#064ACB; --navy-deep:#021d6b; --blue:#366ED8; --orange:#F6490D;
+  --violet:#7c3aed;
+  --ink:#0b1220; --text:#0f172a; --muted:#64748b;
+  --line:#e6eaf2; --panel:#f7f9fc; --white:#ffffff;
+  --green:#16a34a; --purple:#7e22ce;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+
+/* ═══ DEMO RIBBON ═══ */
+.demo-ribbon{position:sticky;top:0;z-index:100;background:linear-gradient(90deg,var(--orange),#ff7a45);color:#fff;text-align:center;font-weight:800;font-size:13px;letter-spacing:.02em;padding:9px 16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.demo-ribbon .pulse{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+/* ═══ NAV ═══ */
+.nav{position:sticky;top:35px;z-index:90;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;text-decoration:none}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center}
+.brand-mark svg{width:17px;height:17px}
+.nav a.dl{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:800;text-decoration:none;box-shadow:0 3px 0 #043898}
+
+/* ═══ HERO ═══ */
+.hero{background:linear-gradient(150deg,var(--navy-deep) 0%,var(--navy) 46%,var(--blue) 100%);padding:64px 24px 56px;text-align:center;position:relative;overflow:hidden}
+.hero-mesh{position:absolute;inset:0;background:radial-gradient(ellipse 55% 75% at 12% 20%,rgba(246,73,13,.16) 0%,transparent 60%),radial-gradient(ellipse 50% 65% at 88% 12%,rgba(124,58,237,.22) 0%,transparent 55%);pointer-events:none}
+.hero-content{position:relative;max-width:680px;margin:0 auto}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(246,73,13,.16);color:#ffbfa6;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;border-radius:999px;border:1px solid rgba(246,73,13,.38);margin-bottom:20px}
+.hero h1{font-family:'Manrope',sans-serif;font-size:clamp(28px,4.4vw,42px);font-weight:800;color:#fff;line-height:1.16;letter-spacing:-.02em;margin-bottom:16px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--orange),#ff9770);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:15.5px;color:#c9d8ff;line-height:1.7;font-weight:600}
+
+/* ═══ SECTION SHELL ═══ */
+.section{max-width:1000px;margin:0 auto;padding:64px 24px}
+.section-title{font-family:'Manrope',sans-serif;font-size:clamp(22px,3vw,28px);font-weight:800;text-align:center;letter-spacing:-.02em;margin-bottom:10px}
+.section-sub{text-align:center;font-size:14.5px;color:var(--muted);max-width:520px;margin:0 auto 40px;line-height:1.7;font-weight:600}
+
+/* ═══ DEMO CARD ═══ */
+.demo-card{background:var(--panel);border:1.5px solid var(--line);border-radius:22px;padding:32px}
+.upload-zone{border:2.5px dashed #c7d3ea;border-radius:16px;padding:36px 20px;text-align:center;position:relative;background:#fff;cursor:pointer;transition:border-color .2s,background .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:#f2f6ff}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:34px;margin-bottom:10px}
+.upload-title{font-weight:800;font-size:15px;margin-bottom:5px}
+.upload-formats{font-size:12.5px;color:var(--muted);font-weight:600}
+.preview-wrap{display:none;margin-top:16px;text-align:center}
+.preview-wrap img{max-height:220px;border-radius:12px;margin:0 auto;box-shadow:0 6px 20px rgba(6,74,203,.15)}
+.preview-name{font-size:12.5px;color:var(--muted);margin-top:8px;font-weight:700}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}
+.sc{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;color:var(--text)}
+.sc input{accent-color:var(--navy)}
+
+.run-btn{width:100%;background:linear-gradient(135deg,var(--orange),#ff7a45);color:#fff;border:none;padding:15px;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 0 #c23708;transition:transform .15s}
+.run-btn:hover{transform:translateY(-1px)}
+.run-btn:disabled{opacity:.7;cursor:progress}
+
+/* ═══ PROCESSING ═══ */
+.processing{display:none;margin-top:22px;text-align:center;padding:20px;background:#fff;border-radius:14px;border:1.5px solid var(--line)}
+.spinner{width:30px;height:30px;border:3px solid #e6eaf2;border-top-color:var(--navy);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-msg{font-size:13.5px;font-weight:700;color:var(--muted)}
+
+/* ═══ RESULTS ═══ */
+.results{display:none;margin-top:28px}
+.sample-tag{display:inline-flex;align-items:center;gap:7px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-size:12px;font-weight:800;padding:7px 14px;border-radius:999px;margin-bottom:16px}
+.result-scene{border-radius:14px;overflow:hidden;border:1.5px solid var(--line);box-shadow:0 6px 24px rgba(6,74,203,.1)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 24px;font-size:12px;font-weight:700}
+.legend span{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%}
+
+.group-header{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13.5px;margin:22px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+.group-count{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
+.objects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.obj-card{background:#fff;border-radius:12px;padding:10px;text-align:center;border:2.5px solid;box-shadow:0 2px 8px rgba(6,74,203,.06)}
+.obj-swatch{width:100%;aspect-ratio:1;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.obj-name{font-weight:800;font-size:13px;text-transform:capitalize}
+.obj-conf{display:inline-block;font-size:11px;font-weight:800;margin-top:4px;padding:2px 8px;border-radius:999px}
+.conf-high{background:#dcfce7;color:#166534}
+.conf-mid{background:#fef3c7;color:#92400e}
+.model-tag{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-top:5px}
+
+/* ═══ DOWNLOAD SECTION ═══ */
+.download-section{background:linear-gradient(150deg,var(--navy-deep),var(--navy));border-radius:24px;padding:48px 32px;color:#fff;text-align:center}
+.download-section h2{font-family:'Manrope',sans-serif;font-size:clamp(22px,3vw,28px);font-weight:800;margin-bottom:12px}
+.download-section p{color:#c9d8ff;font-size:14.5px;max-width:520px;margin:0 auto 26px;line-height:1.7;font-weight:600}
+.big-dl-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--orange),#ff7a45);color:#fff;font-weight:800;font-size:16px;padding:16px 32px;border-radius:14px;text-decoration:none;box-shadow:0 5px 0 #c23708;transition:transform .15s}
+.big-dl-btn:hover{transform:translateY(-2px)}
+
+.steps-panel{text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:24px 26px;margin-top:32px}
+.steps-panel h3{font-family:'Manrope',sans-serif;font-size:15px;margin-bottom:16px}
+.step-item{margin-bottom:16px}
+.step-item:last-child{margin-bottom:0}
+.step-num-inline{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--orange);border-radius:50%;font-size:11px;font-weight:800;margin-right:8px}
+.step-item p{color:#c9d8ff;font-size:13px;margin:6px 0 8px;font-weight:600}
+pre{background:#050b1f;color:#a8f0c6;font-size:12.5px;padding:12px 14px;border-radius:8px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;line-height:1.6}
+
+footer{text-align:center;padding:32px 24px;color:var(--muted);font-size:12.5px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="demo-ribbon"><span class="pulse"></span> DEMO MODE — this page shows a simulated pipeline run with sample output. No live model runs here.</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="white" stroke-width="2"/><circle cx="17" cy="17" r="4" stroke="white" stroke-width="2"/></svg></span>
+      HybridVision
+    </a>
+    <a href="#download" class="dl">Download full project</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-mesh"></div>
+  <div class="hero-content">
+    <span class="eyebrow">🧪 Interactive Demo</span>
+    <h1>See the <em>Hybrid Vision</em> pipeline in action</h1>
+    <p>YOLOv8 detects, EfficientNet-B0 refines. Walk through the exact flow of the real app below — then download it to run real detection on your own machine.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Try the image detection flow</div>
+  <p class="section-sub">Upload a photo to see how it feels — the result shown afterward is a fixed sample output, not an analysis of your file.</p>
+
+  <div class="demo-card">
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="upload-icon">📷</div>
+      <div class="upload-title">Drop a photo here or click to browse</div>
+      <div class="upload-formats">Supports JPG, PNG and most photo formats</div>
+    </div>
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" alt="Your upload">
+      <div class="preview-name" id="previewName"></div>
+    </div>
+
+    <div class="filters">
+      <label class="sc"><input type="checkbox" checked> Person</label>
+      <label class="sc"><input type="checkbox" checked> Vehicle</label>
+      <label class="sc"><input type="checkbox" checked> Animal</label>
+      <label class="sc"><input type="checkbox" checked> Furniture</label>
+    </div>
+
+    <button class="run-btn" id="runBtn">🔍 Find Objects in My Photo</button>
+
+    <div class="processing" id="processing">
+      <div class="spinner"></div>
+      <div class="processing-msg" id="processingMsg">Scanning frame with YOLOv8…</div>
+    </div>
+
+    <div class="results" id="results">
+      <span class="sample-tag">🧪 Sample output — Demo Mode, not a real analysis of your photo</span>
+
+      <!-- Illustrated scene, not a real photo: original artwork, no real identifiable people -->
+      <div class="result-scene">
+        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#bfe1ff"/><stop offset="1" stop-color="#e8f5ff"/>
+            </linearGradient>
+          </defs>
+          <rect width="900" height="520" fill="url(#sky)"/>
+          <circle cx="800" cy="70" r="42" fill="#ffd873"/>
+          <rect y="400" width="900" height="120" fill="#bfe3b8"/>
+          <path d="M0 400 Q 450 370 900 400 V520 H0 Z" fill="#a9d9a0"/>
+          <!-- trees -->
+          <g opacity=".8">
+            <rect x="60" y="330" width="14" height="80" fill="#8a6b4d"/><circle cx="67" cy="310" r="42" fill="#5fa851"/>
+            <rect x="820" y="340" width="12" height="70" fill="#8a6b4d"/><circle cx="826" cy="322" r="36" fill="#5fa851"/>
+          </g>
+          <!-- car -->
+          <g id="obj-car">
+            <rect x="640" y="360" width="150" height="55" rx="12" fill="#366ED8"/>
+            <rect x="665" y="335" width="95" height="35" rx="10" fill="#366ED8"/>
+            <circle cx="672" cy="418" r="16" fill="#0b1220"/><circle cx="762" cy="418" r="16" fill="#0b1220"/>
+          </g>
+          <!-- dog -->
+          <g id="obj-dog">
+            <ellipse cx="540" cy="430" rx="34" ry="18" fill="#c9975a"/>
+            <circle cx="512" cy="418" r="15" fill="#c9975a"/>
+            <rect x="515" y="440" width="6" height="20" fill="#c9975a"/><rect x="560" y="440" width="6" height="20" fill="#c9975a"/>
+          </g>
+          <!-- person 1 (man) -->
+          <g id="obj-man">
+            <circle cx="230" cy="330" r="24" fill="#e8b48a"/>
+            <rect x="205" y="352" width="50" height="80" rx="14" fill="#5b7fd6"/>
+            <rect x="210" y="430" width="16" height="45" fill="#2b3550"/><rect x="234" y="430" width="16" height="45" fill="#2b3550"/>
+          </g>
+          <!-- person 2 (woman) -->
+          <g id="obj-woman">
+            <circle cx="340" cy="322" r="22" fill="#d99a70"/>
+            <path d="M312 344 h56 l14 96 h-84 z" fill="#7e22ce"/>
+            <rect x="316" y="440" width="14" height="38" fill="#2b3550"/><rect x="360" y="440" width="14" height="38" fill="#2b3550"/>
+          </g>
+          <!-- child -->
+          <g id="obj-child">
+            <circle cx="420" cy="360" r="16" fill="#e8b48a"/>
+            <rect x="404" y="376" width="32" height="52" rx="10" fill="#F6490D"/>
+            <rect x="407" y="428" width="10" height="28" fill="#2b3550"/><rect x="423" y="428" width="10" height="28" fill="#2b3550"/>
+          </g>
+
+          <!-- bounding boxes -->
+          <rect x="195" y="298" width="72" height="182" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+          <text x="197" y="292" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#1 man 96.4%</text>
+
+          <rect x="304" y="292" width="90" height="192" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+          <text x="306" y="286" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#2 woman 94.1%</text>
+
+          <rect x="392" y="340" width="60" height="122" fill="none" stroke="#7e22ce" stroke-width="3" stroke-dasharray="6 3" rx="4"/>
+          <text x="394" y="334" font-family="monospace" font-size="13" fill="#7e22ce" font-weight="700">#3 boy 88.7%</text>
+
+          <rect x="492" y="392" width="94" height="68" fill="none" stroke="#F6490D" stroke-width="3" rx="4"/>
+          <text x="494" y="386" font-family="monospace" font-size="13" fill="#c2410c" font-weight="700">#4 dog 71.2%</text>
+
+          <rect x="628" y="330" width="176" height="98" fill="none" stroke="#16a34a" stroke-width="3" rx="4"/>
+          <text x="630" y="324" font-family="monospace" font-size="13" fill="#16a34a" font-weight="700">#5 car 97.8%</text>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <span><span class="dot" style="background:#16a34a"></span> High confidence (YOLOv8)</span>
+        <span><span class="dot" style="background:#F6490D"></span> Medium confidence</span>
+        <span><span class="dot" style="background:#7e22ce"></span> EfficientNet-B0 refined</span>
+      </div>
+
+      <div class="group-header" style="border-color:#e9d5ff">🧠 EfficientNet-B0 Results <span class="group-count">1 object</span></div>
+      <div class="objects-grid">
+        <div class="obj-card" style="border-color:#7e22ce">
+          <div class="obj-swatch" style="background:#f3e8ff">🧒</div>
+          <div class="obj-name">boy</div>
+          <span class="obj-conf conf-mid">🤔 88.7%</span>
+          <span class="model-tag">🧠 EfficientNet-B0</span>
+        </div>
+      </div>
+
+      <div class="group-header" style="border-color:#dcfce7">⚡ YOLOv8 Results <span class="group-count">4 objects</span></div>
+      <div class="objects-grid">
+        <div class="obj-card" style="border-color:#16a34a">
+          <div class="obj-swatch" style="background:#dcfce7">🧑</div>
+          <div class="obj-name">man</div>
+          <span class="obj-conf conf-high">✅ 96.4%</span>
+          <span class="model-tag">⚡ YOLOv8</span>
+        </div>
+        <div class="obj-card" style="border-color:#16a34a">
+          <div class="obj-swatch" style="background:#dcfce7">👩</div>
+          <div class="obj-name">woman</div>
+          <span class="obj-conf conf-high">✅ 94.1%</span>
+          <span class="model-tag">⚡ YOLOv8</span>
+        </div>
+        <div class="obj-card" style="border-color:#F6490D">
+          <div class="obj-swatch" style="background:#ffedd5">🐕</div>
+          <div class="obj-name">dog</div>
+          <span class="obj-conf conf-mid">🤔 71.2%</span>
+          <span class="model-tag">⚡ YOLOv8</span>
+        </div>
+        <div class="obj-card" style="border-color:#16a34a">
+          <div class="obj-swatch" style="background:#dcfce7">🚗</div>
+          <div class="obj-name">car</div>
+          <span class="obj-conf conf-high">✅ 97.8%</span>
+          <span class="model-tag">⚡ YOLOv8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="download">
+  <div class="download-section">
+    <h2>Want to run this for real?</h2>
+    <p>Get the full source — real YOLOv8 + EfficientNet-B0 inference on your own images and videos, no sample data, no demo banner.</p>
+    <a class="big-dl-btn" href="https://github.com/itsmearundas/Detecting-and-classifying-multiple-objects-in-images-and-videos" target="_blank" rel="noopener">
+      ⬇ Download from GitHub
+    </a>
+
+    <div class="steps-panel">
+      <h3>Run it end-to-end on your machine</h3>
+
+      <div class="step-item">
+        <p><span class="step-num-inline">1</span>Clone the repo</p>
+        <pre>git clone https://github.com/itsmearundas/Detecting-and-classifying-multiple-objects-in-images-and-videos.git
+cd Detecting-and-classifying-multiple-objects-in-images-and-videos/hybrid</pre>
+      </div>
+
+      <div class="step-item">
+        <p><span class="step-num-inline">2</span>Install dependencies (Python 3.10+ recommended)</p>
+        <pre>pip install -r requirements.txt</pre>
+      </div>
+
+      <div class="step-item">
+        <p><span class="step-num-inline">3</span>Run the app locally</p>
+        <pre>python app.py
+# → open http://localhost:5000</pre>
+      </div>
+
+      <div class="step-item">
+        <p><span class="step-num-inline">4</span>(Optional) Run it in Docker instead</p>
+        <pre>docker build -t hybrid-vision .
+docker run -p 7860:7860 -e PORT=7860 hybrid-vision
+# → open http://localhost:7860</pre>
+      </div>
+
+      <div class="step-item">
+        <p><span class="step-num-inline">5</span>Want it hosted online instead of local? See <code>DEPLOY.md</code> in the repo — it needs roughly 2GB RAM to hold both models in memory, so most free serverless tiers won't fit it. A small VPS or a paid Render "Standard" instance both work well.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© <span id="year"></span> HybridVision · This page is a static demo — the real pipeline runs only in the downloaded project.</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewWrap = document.getElementById('previewWrap');
+const previewImg = document.getElementById('previewImg');
+const previewName = document.getElementById('previewName');
+const runBtn = document.getElementById('runBtn');
+const processing = document.getElementById('processing');
+const processingMsg = document.getElementById('processingMsg');
+const results = document.getElementById('results');
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    previewName.textContent = file.name;
+    previewWrap.style.display = 'block';
+    results.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+['dragover','dragenter'].forEach(evt => dropZone.addEventListener(evt, e => {
+  e.preventDefault(); dropZone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, e => {
+  dropZone.classList.remove('drag');
+}));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) {
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event('change'));
+  }
+});
+
+const steps = [
+  'Scanning frame with YOLOv8…',
+  'Cropping low-confidence detections…',
+  'Routing crops to EfficientNet-B0…',
+  'Cross-checking second opinions…',
+  'Drawing annotated result…'
+];
+
+runBtn.addEventListener('click', () => {
+  runBtn.disabled = true;
+  results.style.display = 'none';
+  processing.style.display = 'block';
+  let i = 0;
+  processingMsg.textContent = steps[0];
+  const interval = setInterval(() => {
+    i++;
+    if (i < steps.length) {
+      processingMsg.textContent = steps[i];
+    } else {
+      clearInterval(interval);
+      processing.style.display = 'none';
+      results.style.display = 'block';
+      runBtn.disabled = false;
+      results.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }, 700);
+});
+</script>
+</body>
+</html>
